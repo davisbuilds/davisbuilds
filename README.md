@@ -3,12 +3,11 @@
 <!--Title @davisbuilds-->
 <h1 align="center">👋 Hi, I’m @davisbuilds</h1>
 
-> "We are what we repeatedly do. Excellence, then, is not an act, but a habit." -- Aristotle
-<br>
-Welcome to my GitHub! Here you will find various weekend projects, prompts, and docs I have organized across my journey into data science, machine learning, and more. To connect, visit my website [davisbuilds.net](https://davisbuilds.net).
-<br>
+> "We are what we repeatedly do. Excellence, then, is not an act, but a habit." -- Aristotle<br>
+
+Welcome to my GitHub! Here you will find various weekend projects, prompts, and docs I have organized across my journey into data science, machine learning, and more. To connect, visit my website [davisbuilds.net](https://davisbuilds.net).<br>
+
 <h2 align="center">GitHub Stats</h2>
-<br>
 
 <!--Total Contributions--> 
 <p align="center">
