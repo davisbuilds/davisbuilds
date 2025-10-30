@@ -1,11 +1,11 @@
-- 👋 Hi, I’m @davisbuilds
+![Profile Views](https://komarev.com/ghpvc/?username=davisbuilds&style=flat)
 
 <!--Title @davisbuilds-->
-<h2 align="center">Building...</h2>
+<h1 align="center">👋 Hi, I’m @davisbuilds</h1>
+
+> "We are what we repeatedly do. Excellence, then, is not an act, but a habit." -- Aristotle
 <br>
-
-Welcome to my GitHub! Here you will find various side projects, prompts, and documentation I have organized across my journey into data science, AI, and more. To connect, visit my website [davisbuilds.net](https://davisbuilds.net) for more information.
-
+Welcome to my GitHub! Here you will find various weekend projects, prompts, and docs I have organized across my journey into data science, machine learning, and more. To connect, visit my website [davisbuilds.net](https://davisbuilds.net).
 <br>
 <h2 align="center">GitHub Stats</h2>
 <br>
