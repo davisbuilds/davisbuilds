@@ -7,6 +7,20 @@
 
 Welcome to my GitHub! Here you will find various weekend projects, prompts, and docs I have organized across my journey into data science, machine learning, and more. To connect, visit my website [davisbuilds.net](https://davisbuilds.net).<br>
 
+<h2 align="center">🛠️ Technologies & Tools</h2>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python"/>
+  <img src="https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white" alt="Docker"/>
+  <img src="https://img.shields.io/badge/MLOps-FF6F00?style=for-the-badge&logo=tensorflow&logoColor=white" alt="MLOps"/>
+  <img src="https://img.shields.io/badge/CI/CD-2088FF?style=for-the-badge&logo=githubactions&logoColor=white" alt="CI/CD"/>
+  <img src="https://img.shields.io/badge/Ansible-EE0000?style=for-the-badge&logo=ansible&logoColor=white" alt="Ansible"/>
+  <img src="https://img.shields.io/badge/Data_Science-00ADD8?style=for-the-badge&logo=databricks&logoColor=white" alt="Data Science"/>
+  <img src="https://img.shields.io/badge/System_Design-0078D4?style=for-the-badge&logo=microsoftazure&logoColor=white" alt="System Design"/>
+  <img src="https://img.shields.io/badge/UI/UX-FF61F6?style=for-the-badge&logo=figma&logoColor=white" alt="UI/UX"/>
+  <img src="https://img.shields.io/badge/Splunk-000000?style=for-the-badge&logo=splunk&logoColor=white" alt="Splunk"/>
+</p>
+
 <h2 align="center">GitHub Stats</h2>
 
 <!--Total Contributions--> 
