@@ -1,16 +1,27 @@
-![Profile Views](https://komarev.com/ghpvc/?username=davisbuilds&style=flat)
-
 <!--Title @davisbuilds-->
-<h1 align="center">👋 Hi, I’m @davisbuilds</h1>
+<h1 align="left">👋 Hi, I’m @davisbuilds</h1>
 
 > "We are what we repeatedly do. Excellence, then, is not an act, but a habit." -- Aristotle<br>
 
-Welcome to my GitHub! Here you will find various weekend projects, prompts, and docs I have organized across my journey into data science, machine learning, and more. To connect, visit my website [davisbuilds.net](https://davisbuilds.net).<br>
+<br>
 
-<h2 align="center">🛠️ Technologies & Tools</h2>
+Currently claudemaxxing 🚀 I like to build things, break things, and learn fast along the way.
 
-<p align="center">
+<h4 align="left">Links</h4>
+
+- Website: [davisbuilds.net](https://davisbuilds.net)
+- Substack: [@davisbuilds](https://substack.com/@davisbuilds?)
+- Twitter/X: [@davis_builds](https://x.com/davis_builds)
+- [LinkedIn](https://www.linkedin.com/in/nathaniel-davis-gee)
+
+<br>
+
+<p align="left">
   <img src="https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python"/>
+  <img src="https://img.shields.io/badge/Claude_Code-D97757?style=for-the-badge&logo=anthropic&logoColor=white" alt="Claude Code"/>
+  <img src="https://img.shields.io/badge/OpenAI_Codex-412991?style=for-the-badge&logo=openai&logoColor=white" alt="OpenAI Codex"/>
+  <img src="https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript"/>
+  <img src="https://img.shields.io/badge/Next.js-000000?style=for-the-badge&logo=nextdotjs&logoColor=white" alt="Next.js"/>
   <img src="https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white" alt="Docker"/>
   <img src="https://img.shields.io/badge/MLOps-FF6F00?style=for-the-badge&logo=tensorflow&logoColor=white" alt="MLOps"/>
   <img src="https://img.shields.io/badge/CI/CD-2088FF?style=for-the-badge&logo=githubactions&logoColor=white" alt="CI/CD"/>
@@ -21,7 +32,24 @@ Welcome to my GitHub! Here you will find various weekend projects, prompts, and 
   <img src="https://img.shields.io/badge/Splunk-000000?style=for-the-badge&logo=splunk&logoColor=white" alt="Splunk"/>
 </p>
 
-<h2 align="center">GitHub Stats</h2>
+<h2 align="left">Projects</h2>
+
+- [**skills**](https://github.com/davisbuilds/skills) - Davis's agent skills repository
+- [**feed-agent**](https://github.com/davisbuilds/feed-agent) - Personal newsletter intelligence CLI agent
+- [**qotd**](https://github.com/davisbuilds/qotd) - Quote of the day
+- [**prompts**](https://github.com/davisbuilds/prompts) - Davis's prompts collection
+- [**eurosat-xfer-learning**](https://github.com/davisbuilds/eurosat-xfer-learning) - Investigating transfer learning approaches on ImageNet-pretrained CNNs for satellite imagery classification
+- [**awesome-claude-code**](https://github.com/davisbuilds/awesome-claude-code) - A curated list of awesome commands, files, and workflows for Claude Code. Forked [awesome-claude-code](https://github.com/hesreallyhim/awesome-claude-code)
+- [**superpowers**](https://github.com/davisbuilds/superpowers) - Claude Code superpowers: core skills library. Forked [superpowers](https://github.com/obra/superpowers)
+- [**anthropics-skills**](https://github.com/davisbuilds/anthropics-skills) - Public repository for Anthropic Skills. Forked [anthropics/skills](https://github.com/anthropics/skills) 
+- [**agent-scripts**](https://github.com/davisbuilds/agent-scripts) - Scripts for agents, shared between repositories. Forked [agent-scripts](https://github.com/steipete/agent-scripts)
+- [**vibetunnel**](https://github.com/davisbuilds/vibetunnel) - Turn any browser into your terminal & command your agents on the go. Forked [vibetunnel](https://github.com/amantus-ai/vibetunnel)
+- [**llm**](https://github.com/davisbuilds/llm) - Access large language models from the command-line. Forked [llm](https://github.com/simonw/llm)
+- [**opcode**](https://github.com/davisbuilds/opcode) - A powerful GUI app and toolkit for Claude Code with custom agent creation. Forked [opcode](https://github.com/winfunc/opcode)
+- [**llm-mlx**](https://github.com/davisbuilds/llm-mlx) - Support for MLX models in LLM. Forked [llm-mlx](https://github.com/simonw/llm-mlx)
+- [**productivity**](https://github.com/davisbuilds/productivity) - A collection of succinct notes and one-pagers on productivity, life, and more
+
+<h2 align="left">GitHub Stats</h2>
 
 <!--Total Contributions--> 
 <!-- <p align="center">
@@ -36,3 +64,5 @@ Welcome to my GitHub! Here you will find various weekend projects, prompts, and 
 
 <!--Activity Graph-->
 ![Davis's Recent GitHub Activity](https://github-readme-activity-graph.vercel.app/graph?username=davisbuilds&bg_color=0d1117&color=ffffff&line=00b3ff&point=f9fafa&area=true&hide_border=true)
+
+![Profile Views](https://komarev.com/ghpvc/?username=davisbuilds&style=flat)
