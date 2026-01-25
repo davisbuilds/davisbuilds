@@ -11,10 +11,14 @@ Welcome to my GitHub! Here you will find various weekend projects, prompts, and 
 
 <p align="center">
   <img src="https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python"/>
+  <img src="https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript"/>
+  <img src="https://img.shields.io/badge/Next.js-000000?style=for-the-badge&logo=nextdotjs&logoColor=white" alt="Next.js"/>
   <img src="https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white" alt="Docker"/>
   <img src="https://img.shields.io/badge/MLOps-FF6F00?style=for-the-badge&logo=tensorflow&logoColor=white" alt="MLOps"/>
   <img src="https://img.shields.io/badge/CI/CD-2088FF?style=for-the-badge&logo=githubactions&logoColor=white" alt="CI/CD"/>
   <img src="https://img.shields.io/badge/Ansible-EE0000?style=for-the-badge&logo=ansible&logoColor=white" alt="Ansible"/>
+  <img src="https://img.shields.io/badge/OpenAI_Codex-412991?style=for-the-badge&logo=openai&logoColor=white" alt="OpenAI Codex"/>
+  <img src="https://img.shields.io/badge/Claude_Code-D97757?style=for-the-badge&logo=anthropic&logoColor=white" alt="Claude Code"/>
   <img src="https://img.shields.io/badge/Data_Science-00ADD8?style=for-the-badge&logo=databricks&logoColor=white" alt="Data Science"/>
   <img src="https://img.shields.io/badge/System_Design-0078D4?style=for-the-badge&logo=microsoftazure&logoColor=white" alt="System Design"/>
   <img src="https://img.shields.io/badge/UI/UX-FF61F6?style=for-the-badge&logo=figma&logoColor=white" alt="UI/UX"/>
@@ -36,3 +40,20 @@ Welcome to my GitHub! Here you will find various weekend projects, prompts, and 
 
 <!--Activity Graph-->
 ![Davis's Recent GitHub Activity](https://github-readme-activity-graph.vercel.app/graph?username=davisbuilds&bg_color=0d1117&color=ffffff&line=00b3ff&point=f9fafa&area=true&hide_border=true)
+
+<h2 align="center">Projects</h2>
+
+- [**skills**](https://github.com/davisbuilds/skills) - Davis's agent skills repository
+- [**feed-agent**](https://github.com/davisbuilds/feed-agent) - Personal newsletter intelligence agent
+- [**awesome-claude-code**](https://github.com/davisbuilds/awesome-claude-code) - A curated list of awesome commands, files, and workflows for Claude Code
+- [**superpowers**](https://github.com/davisbuilds/superpowers) - Claude Code superpowers: core skills library
+- [**anthropics-skills**](https://github.com/davisbuilds/anthropics-skills) - Public repository for Agent Skills
+- [**agent-scripts**](https://github.com/davisbuilds/agent-scripts) - Scripts for agents, shared between repositories
+- [**prompts**](https://github.com/davisbuilds/prompts) - Davis's prompts collection
+- [**vibetunnel**](https://github.com/davisbuilds/vibetunnel) - Turn any browser into your terminal & command your agents on the go
+- [**llm**](https://github.com/davisbuilds/llm) - Access large language models from the command-line
+- [**opcode**](https://github.com/davisbuilds/opcode) - A powerful GUI app and toolkit for Claude Code with custom agent creation
+- [**qotd**](https://github.com/davisbuilds/qotd) - Quote of the day
+- [**eurosat-xfer-learning**](https://github.com/davisbuilds/eurosat-xfer-learning) - Investigating transfer learning approaches on ImageNet-pretrained CNNs for satellite imagery classification
+- [**llm-mlx**](https://github.com/davisbuilds/llm-mlx) - Support for MLX models in LLM
+- [**productivity**](https://github.com/davisbuilds/productivity) - A collection of succinct notes and one-pagers on productivity, life, and more
