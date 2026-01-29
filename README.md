@@ -38,7 +38,11 @@ Currently claudemaxxing 🚀 I like to build things, break things, and learn fas
 - [**feed-agent**](https://github.com/davisbuilds/feed-agent) - Personal newsletter intelligence CLI agent
 - [**qotd**](https://github.com/davisbuilds/qotd) - Quote of the day
 - [**prompts**](https://github.com/davisbuilds/prompts) - Davis's prompts collection
+- [**slugify**](https://github.com/davisbuilds/slugify) - Spec driven library for converting text to URL-safe slugs, for AI agents
+- [**caseshift**](https://github.com/davisbuilds/slugify) - Spec driven, universal case conversion library for AI agents
 - [**eurosat-xfer-learning**](https://github.com/davisbuilds/eurosat-xfer-learning) - Investigating transfer learning approaches on ImageNet-pretrained CNNs for satellite imagery classification
+- [**moltbot**](https://github.com/davisbuilds/moltbot) - Your own personal AI assistant. Any OS. Any Platform. The lobster way. Forked [moltbot](https://github.com/moltbot/moltbot)
+- [**summarize**](https://github.com/davisbuilds/summarize) - Point at any URL/YouTube/Podcast or file. Get the gist. CLI and Chrome Extension. Forked [summarize](https://github.com/steipete/summarize)
 - [**awesome-claude-code**](https://github.com/davisbuilds/awesome-claude-code) - A curated list of awesome commands, files, and workflows for Claude Code. Forked [awesome-claude-code](https://github.com/hesreallyhim/awesome-claude-code)
 - [**superpowers**](https://github.com/davisbuilds/superpowers) - Claude Code superpowers: core skills library. Forked [superpowers](https://github.com/obra/superpowers)
 - [**anthropics-skills**](https://github.com/davisbuilds/anthropics-skills) - Public repository for Anthropic Skills. Forked [anthropics/skills](https://github.com/anthropics/skills) 
