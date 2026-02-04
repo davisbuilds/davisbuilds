@@ -34,20 +34,20 @@ Currently claudemaxxing 🚀 I like to build things, break things, and learn fas
 
 <h2 align="left">Projects</h2>
 
-- [**skills**](https://github.com/davisbuilds/skills) - Davis's agent skills repository
+- [**dojo**](https://github.com/davisbuilds/dojo) - Davis's agent skills repository
 - [**feed-agent**](https://github.com/davisbuilds/feed-agent) - Personal newsletter intelligence CLI agent
-- [**qotd**](https://github.com/davisbuilds/qotd) - Quote of the day
+- [**qotd**](https://github.com/davisbuilds/qotd) - Quote of the day web & python app
 - [**prompts**](https://github.com/davisbuilds/prompts) - Davis's prompts collection
-- [**slugify**](https://github.com/davisbuilds/slugify) - Spec driven library for converting text to URL-safe slugs, for AI agents
-- [**caseshift**](https://github.com/davisbuilds/slugify) - Spec driven, universal case conversion library for AI agents
+- [**slugify**](https://github.com/davisbuilds/slugify) - Spec driven library for AI agents, convert any text to URL-safe slugs
+- [**caseshift**](https://github.com/davisbuilds/caseshift) - Spec driven library for AI agents, universal case conversion
 - [**eurosat-xfer-learning**](https://github.com/davisbuilds/eurosat-xfer-learning) - Investigating transfer learning approaches on ImageNet-pretrained CNNs for satellite imagery classification
-- [**moltbot**](https://github.com/davisbuilds/moltbot) - Your own personal AI assistant. Any OS. Any Platform. The lobster way. Forked [moltbot](https://github.com/moltbot/moltbot)
+- [**openclaw**](https://github.com/davisbuilds/openclaw) - Your own personal AI assistant. Any OS. Any Platform. The lobster way. Forked [moltbot](https://github.com/openclaw/openclaw)
+- [**vibetunnel**](https://github.com/davisbuilds/vibetunnel) - Turn any browser into your terminal & command your agents on the go. Forked [vibetunnel](https://github.com/amantus-ai/vibetunnel)
 - [**summarize**](https://github.com/davisbuilds/summarize) - Point at any URL/YouTube/Podcast or file. Get the gist. CLI and Chrome Extension. Forked [summarize](https://github.com/steipete/summarize)
 - [**awesome-claude-code**](https://github.com/davisbuilds/awesome-claude-code) - A curated list of awesome commands, files, and workflows for Claude Code. Forked [awesome-claude-code](https://github.com/hesreallyhim/awesome-claude-code)
 - [**superpowers**](https://github.com/davisbuilds/superpowers) - Claude Code superpowers: core skills library. Forked [superpowers](https://github.com/obra/superpowers)
 - [**anthropics-skills**](https://github.com/davisbuilds/anthropics-skills) - Public repository for Anthropic Skills. Forked [anthropics/skills](https://github.com/anthropics/skills) 
 - [**agent-scripts**](https://github.com/davisbuilds/agent-scripts) - Scripts for agents, shared between repositories. Forked [agent-scripts](https://github.com/steipete/agent-scripts)
-- [**vibetunnel**](https://github.com/davisbuilds/vibetunnel) - Turn any browser into your terminal & command your agents on the go. Forked [vibetunnel](https://github.com/amantus-ai/vibetunnel)
 - [**llm**](https://github.com/davisbuilds/llm) - Access large language models from the command-line. Forked [llm](https://github.com/simonw/llm)
 - [**opcode**](https://github.com/davisbuilds/opcode) - A powerful GUI app and toolkit for Claude Code with custom agent creation. Forked [opcode](https://github.com/winfunc/opcode)
 - [**llm-mlx**](https://github.com/davisbuilds/llm-mlx) - Support for MLX models in LLM. Forked [llm-mlx](https://github.com/simonw/llm-mlx)
