@@ -5,7 +5,7 @@
 
 <br>
 
-Currently claudemaxxing 🚀 I like to build things, break things, and learn fast along the way.
+Coffee & Claudemaxxing 🚀 I like to build things, break things, and learn fast along the way.
 
 <h4 align="left">Links</h4>
 
@@ -34,12 +34,13 @@ Currently claudemaxxing 🚀 I like to build things, break things, and learn fas
 
 <h2 align="left">Projects</h2>
 
-- [**dojo**](https://github.com/davisbuilds/dojo) - Davis's agent skills repository
-- [**feed-agent**](https://github.com/davisbuilds/feed-agent) - Personal newsletter intelligence CLI agent
+- [**dojo**](https://github.com/davisbuilds/dojo) - Extensible dojo for AI agents (skills, hooks, etc)
+- [**feed**](https://github.com/davisbuilds/feed) - Newsletter digest CLI
 - [**qotd**](https://github.com/davisbuilds/qotd) - Quote of the day web & python app
 - [**prompts**](https://github.com/davisbuilds/prompts) - Davis's prompts collection
 - [**slugify**](https://github.com/davisbuilds/slugify) - Spec driven library for AI agents, convert any text to URL-safe slugs
 - [**caseshift**](https://github.com/davisbuilds/caseshift) - Spec driven library for AI agents, universal case conversion
+- [**resnet-cifar10**](https://github.com/davisbuilds/resnet-cifar10) - Codex 5.3 one-shot experiment
 - [**eurosat-xfer-learning**](https://github.com/davisbuilds/eurosat-xfer-learning) - Investigating transfer learning approaches on ImageNet-pretrained CNNs for satellite imagery classification
 - [**openclaw**](https://github.com/davisbuilds/openclaw) - Your own personal AI assistant. Any OS. Any Platform. The lobster way. Forked [moltbot](https://github.com/openclaw/openclaw)
 - [**vibetunnel**](https://github.com/davisbuilds/vibetunnel) - Turn any browser into your terminal & command your agents on the go. Forked [vibetunnel](https://github.com/amantus-ai/vibetunnel)
