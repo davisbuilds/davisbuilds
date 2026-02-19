@@ -5,8 +5,6 @@
 
 <br>
 
-Coffee & Claudemaxxing 🚀 I like to build things, break things, and learn fast along the way.
-
 <h4 align="left">Links</h4>
 
 - Website: [davisbuilds.net](https://davisbuilds.net)
@@ -35,6 +33,7 @@ Coffee & Claudemaxxing 🚀 I like to build things, break things, and learn fast
 <h2 align="left">Projects</h2>
 
 - [**dojo**](https://github.com/davisbuilds/dojo) - Extensible dojo for AI agents (skills, hooks, etc)
+- [**agentstats**](https://github.com/davisbuilds/agentstats) - Analytics dashboard for AI agent workflows
 - [**feed**](https://github.com/davisbuilds/feed) - Newsletter digest CLI
 - [**qotd**](https://github.com/davisbuilds/qotd) - Quote of the day web & python app
 - [**prompts**](https://github.com/davisbuilds/prompts) - Davis's prompts collection
@@ -42,7 +41,7 @@ Coffee & Claudemaxxing 🚀 I like to build things, break things, and learn fast
 - [**caseshift**](https://github.com/davisbuilds/caseshift) - Spec driven library for AI agents, universal case conversion
 - [**resnet-cifar10**](https://github.com/davisbuilds/resnet-cifar10) - Codex 5.3 one-shot experiment
 - [**eurosat-xfer-learning**](https://github.com/davisbuilds/eurosat-xfer-learning) - Investigating transfer learning approaches on ImageNet-pretrained CNNs for satellite imagery classification
-- [**openclaw**](https://github.com/davisbuilds/openclaw) - Your own personal AI assistant. Any OS. Any Platform. The lobster way. Forked [moltbot](https://github.com/openclaw/openclaw)
+- [**openclaw**](https://github.com/davisbuilds/openclaw) - Your own personal AI assistant. Any OS. Any Platform. The lobster way. Forked [openclaw](https://github.com/openclaw/openclaw)
 - [**vibetunnel**](https://github.com/davisbuilds/vibetunnel) - Turn any browser into your terminal & command your agents on the go. Forked [vibetunnel](https://github.com/amantus-ai/vibetunnel)
 - [**summarize**](https://github.com/davisbuilds/summarize) - Point at any URL/YouTube/Podcast or file. Get the gist. CLI and Chrome Extension. Forked [summarize](https://github.com/steipete/summarize)
 - [**awesome-claude-code**](https://github.com/davisbuilds/awesome-claude-code) - A curated list of awesome commands, files, and workflows for Claude Code. Forked [awesome-claude-code](https://github.com/hesreallyhim/awesome-claude-code)
