@@ -1,7 +1,7 @@
 <!--Title @davisbuilds-->
 <h1 align="left">👋 Hi, I’m @davisbuilds</h1>
 
-> "We are what we repeatedly do. Excellence, then, is not an act, but a habit." -- Aristotle<br>
+> "We are what we repeatedly do. Excellence, then, is not an act, but a habit." - Aristotle<br>
 
 <h4 align="left">Links</h4>
 
@@ -30,7 +30,7 @@
 
 <h2 align="left">Projects</h2>
 
-- [**dojo**](https://github.com/davisbuilds/dojo) - Extensible harness for AI agents (skills, hooks, etc)
+- [**dojo**](https://github.com/davisbuilds/dojo) - Extensible framework for AI agents (skills, hooks, etc)
 - [**agentstats**](https://github.com/davisbuilds/agentstats) - Analytics dashboard for monitoring the (agent) situation
 - [**feed**](https://github.com/davisbuilds/feed) - Newsletter digest CLI
 - [**qotd**](https://github.com/davisbuilds/qotd) - Quote of the day web app
