@@ -3,8 +3,6 @@
 
 > "We are what we repeatedly do. Excellence, then, is not an act, but a habit." -- Aristotle<br>
 
-<br>
-
 <h4 align="left">Links</h4>
 
 - Website: [davisbuilds.net](https://davisbuilds.net)
@@ -32,13 +30,14 @@
 
 <h2 align="left">Projects</h2>
 
-- [**dojo**](https://github.com/davisbuilds/dojo) - Extensible dojo for AI agents (skills, hooks, etc)
-- [**agentstats**](https://github.com/davisbuilds/agentstats) - Analytics dashboard for AI agent workflows
+- [**dojo**](https://github.com/davisbuilds/dojo) - Extensible harness for AI agents (skills, hooks, etc)
+- [**agentstats**](https://github.com/davisbuilds/agentstats) - Analytics dashboard for monitoring the (agent) situation
 - [**feed**](https://github.com/davisbuilds/feed) - Newsletter digest CLI
-- [**qotd**](https://github.com/davisbuilds/qotd) - Quote of the day web & python app
+- [**qotd**](https://github.com/davisbuilds/qotd) - Quote of the day web app
 - [**prompts**](https://github.com/davisbuilds/prompts) - Davis's prompts collection
 - [**slugify**](https://github.com/davisbuilds/slugify) - Spec driven library for AI agents, convert any text to URL-safe slugs
 - [**caseshift**](https://github.com/davisbuilds/caseshift) - Spec driven library for AI agents, universal case conversion
+- [**compendium**](https://github.com/davisbuilds/compendium) - A curated collection of advice from successful entrepreneurs
 - [**resnet-cifar10**](https://github.com/davisbuilds/resnet-cifar10) - Codex 5.3 one-shot experiment
 - [**eurosat-xfer-learning**](https://github.com/davisbuilds/eurosat-xfer-learning) - Investigating transfer learning approaches on ImageNet-pretrained CNNs for satellite imagery classification
 - [**openclaw**](https://github.com/davisbuilds/openclaw) - Your own personal AI assistant. Any OS. Any Platform. The lobster way. Forked [openclaw](https://github.com/openclaw/openclaw)
@@ -48,10 +47,9 @@
 - [**superpowers**](https://github.com/davisbuilds/superpowers) - Claude Code superpowers: core skills library. Forked [superpowers](https://github.com/obra/superpowers)
 - [**anthropics-skills**](https://github.com/davisbuilds/anthropics-skills) - Public repository for Anthropic Skills. Forked [anthropics/skills](https://github.com/anthropics/skills) 
 - [**agent-scripts**](https://github.com/davisbuilds/agent-scripts) - Scripts for agents, shared between repositories. Forked [agent-scripts](https://github.com/steipete/agent-scripts)
-- [**llm**](https://github.com/davisbuilds/llm) - Access large language models from the command-line. Forked [llm](https://github.com/simonw/llm)
 - [**opcode**](https://github.com/davisbuilds/opcode) - A powerful GUI app and toolkit for Claude Code with custom agent creation. Forked [opcode](https://github.com/winfunc/opcode)
+- [**llm**](https://github.com/davisbuilds/llm) - Access large language models from the command-line. Forked [llm](https://github.com/simonw/llm)
 - [**llm-mlx**](https://github.com/davisbuilds/llm-mlx) - Support for MLX models in LLM. Forked [llm-mlx](https://github.com/simonw/llm-mlx)
-- [**productivity**](https://github.com/davisbuilds/productivity) - A collection of succinct notes and one-pagers on productivity, life, and more
 
 <h2 align="left">GitHub Stats</h2>
 
