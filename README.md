@@ -15,7 +15,19 @@
 <p align="left">
   <img src="https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python"/>
   <img src="https://img.shields.io/badge/Claude_Code-D97757?style=for-the-badge&logo=anthropic&logoColor=white" alt="Claude Code"/>
-  <img src="https://img.shields.io/badge/Codex-FFFFFF?style=for-the-badge&logo=chatgpt&logoColor=10A37F" alt="Codex"/>
+  <svg xmlns="http://www.w3.org/2000/svg" width="132" height="28" viewBox="0 0 132 28" role="img" aria-label="Codex">
+    <rect width="132" height="28" rx="4" fill="#FFFFFF"/>
+    <g fill="#10A37F" transform="translate(14,14)">
+      <circle cx="0" cy="-5.2" r="2.2"/>
+      <circle cx="4.5" cy="-2.6" r="2.2"/>
+      <circle cx="4.5" cy="2.6" r="2.2"/>
+      <circle cx="0" cy="5.2" r="2.2"/>
+      <circle cx="-4.5" cy="2.6" r="2.2"/>
+      <circle cx="-4.5" cy="-2.6" r="2.2"/>
+      <circle cx="0" cy="0" r="1.7"/>
+    </g>
+    <text x="30" y="18" fill="#111827" font-family="-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Helvetica,Arial,sans-serif" font-size="12" font-weight="700">Codex</text>
+  </svg>
   <img src="https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript"/>
   <img src="https://img.shields.io/badge/Next.js-000000?style=for-the-badge&logo=nextdotjs&logoColor=white" alt="Next.js"/>
   <img src="https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white" alt="Docker"/>
