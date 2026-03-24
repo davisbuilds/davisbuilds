@@ -33,6 +33,9 @@
 - 🥋 [**dojo**](https://github.com/davisbuilds/dojo) - Extensible framework for AI agents (skills, hooks, etc)
 - 📊 [**agentmonitor**](https://github.com/davisbuilds/agentmonitor) - Analytics dashboard for monitoring the (agent) situation
 - 📰 [**feed**](https://github.com/davisbuilds/feed) - Newsletter digest CLI
+- 📄 [**fetchmd**](https://github.com/davisbuilds/fetchmd) - Token-efficient webpage-to-markdown CLI for AI agents
+- 📱 [**agentmonitor-ios**](https://github.com/davisbuilds/agentmonitor-ios) - iOS companion app for agent monitoring
+- 🌿 [**envdiff**](https://github.com/davisbuilds/envdiff) - Deterministic environment contract analysis for repositories
 - 💬 [**qotd**](https://github.com/davisbuilds/qotd) - Quote of the day web app
 - 🧠 [**prompts**](https://github.com/davisbuilds/prompts) - Davis's prompts collection
 - 🔤 [**slugify**](https://github.com/davisbuilds/slugify) - Spec driven library for AI agents, convert any text to URL-safe slugs
@@ -40,11 +43,14 @@
 - 📚 [**compendium**](https://github.com/davisbuilds/compendium) - A curated collection of advice from successful entrepreneurs
 - 🧪 [**resnet-cifar10**](https://github.com/davisbuilds/resnet-cifar10) - Codex 5.3 one-shot experiment
 - 🛰️ [**eurosat-xfer-learning**](https://github.com/davisbuilds/eurosat-xfer-learning) - Investigating transfer learning approaches on ImageNet-pretrained CNNs for satellite imagery classification
-- 📄 [**fetchmd**](https://github.com/davisbuilds/fetchmd) - Fetch and convert web pages into clean markdown for AI workflows
+
+<h3 align="left">Forks</h3>
+
+- 🗂️ [**awesome-claude-code**](https://github.com/davisbuilds/awesome-claude-code) - A curated list of awesome commands, files, and workflows for Claude Code. Forked [awesome-claude-code](https://github.com/hesreallyhim/awesome-claude-code)
+- 🧩 [**compound-engineering-plugin**](https://github.com/davisbuilds/compound-engineering-plugin) - Official Claude Code compound engineering plugin. Forked [compound-engineering-plugin](https://github.com/EveryInc/compound-engineering-plugin)
 - 🦞 [**openclaw**](https://github.com/davisbuilds/openclaw) - Your own personal AI assistant. Any OS. Any Platform. The lobster way. Forked [openclaw](https://github.com/openclaw/openclaw)
 - 🧑‍💻 [**vibetunnel**](https://github.com/davisbuilds/vibetunnel) - Turn any browser into your terminal & command your agents on the go. Forked [vibetunnel](https://github.com/amantus-ai/vibetunnel)
 - ✍️ [**summarize**](https://github.com/davisbuilds/summarize) - Point at any URL/YouTube/Podcast or file. Get the gist. CLI and Chrome Extension. Forked [summarize](https://github.com/steipete/summarize)
-- 🗂️ [**awesome-claude-code**](https://github.com/davisbuilds/awesome-claude-code) - A curated list of awesome commands, files, and workflows for Claude Code. Forked [awesome-claude-code](https://github.com/hesreallyhim/awesome-claude-code)
 - ⚡ [**superpowers**](https://github.com/davisbuilds/superpowers) - Claude Code superpowers: core skills library. Forked [superpowers](https://github.com/obra/superpowers)
 - 🛠️ [**anthropics-skills**](https://github.com/davisbuilds/anthropics-skills) - Public repository for Anthropic Skills. Forked [anthropics/skills](https://github.com/anthropics/skills)
 - 🤖 [**agent-scripts**](https://github.com/davisbuilds/agent-scripts) - Scripts for agents, shared between repositories. Forked [agent-scripts](https://github.com/steipete/agent-scripts)
