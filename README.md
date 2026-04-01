@@ -34,29 +34,14 @@
 - 📊 [**agentmonitor**](https://github.com/davisbuilds/agentmonitor) - Analytics dashboard for monitoring the (agent) situation
 - 📰 [**feed**](https://github.com/davisbuilds/feed) - Newsletter digest CLI
 - 📄 [**fetchmd**](https://github.com/davisbuilds/fetchmd) - Token-efficient webpage-to-markdown CLI for AI agents
-- 📱 [**agentmonitor-ios**](https://github.com/davisbuilds/agentmonitor-ios) - iOS companion app for agent monitoring
-- 🌿 [**envdiff**](https://github.com/davisbuilds/envdiff) - Deterministic environment contract analysis for repositories
+- 🌿 [**envdiff**](https://github.com/davisbuilds/envdiff) - Deterministic environment contract analysis CLI for repositories
+- 🔍 [**mlsearch**](https://github.com/davisbuilds/mlsearch) - Local-first semantic paper search and benchmark workflow for arXiv cs.LG
 - 💬 [**qotd**](https://github.com/davisbuilds/qotd) - Quote of the day web app
+- 📚 [**compendium**](https://github.com/davisbuilds/compendium) - A curated collection of advice from successful entrepreneurs
 - 🧠 [**prompts**](https://github.com/davisbuilds/prompts) - Davis's prompts collection
+- 🧪 [**resnet-cifar10**](https://github.com/davisbuilds/resnet-cifar10) - Codex 5.3 one-shot experiment
 - 🔤 [**slugify**](https://github.com/davisbuilds/slugify) - Spec driven library for AI agents, convert any text to URL-safe slugs
 - 🔡 [**caseshift**](https://github.com/davisbuilds/caseshift) - Spec driven library for AI agents, universal case conversion
-- 📚 [**compendium**](https://github.com/davisbuilds/compendium) - A curated collection of advice from successful entrepreneurs
-- 🧪 [**resnet-cifar10**](https://github.com/davisbuilds/resnet-cifar10) - Codex 5.3 one-shot experiment
-- 🛰️ [**eurosat-xfer-learning**](https://github.com/davisbuilds/eurosat-xfer-learning) - Investigating transfer learning approaches on ImageNet-pretrained CNNs for satellite imagery classification
-
-<h3 align="left">Forks</h3>
-
-- 🗂️ [**awesome-claude-code**](https://github.com/davisbuilds/awesome-claude-code) - A curated list of awesome commands, files, and workflows for Claude Code. Forked [awesome-claude-code](https://github.com/hesreallyhim/awesome-claude-code)
-- 🧩 [**compound-engineering-plugin**](https://github.com/davisbuilds/compound-engineering-plugin) - Official Claude Code compound engineering plugin. Forked [compound-engineering-plugin](https://github.com/EveryInc/compound-engineering-plugin)
-- 🦞 [**openclaw**](https://github.com/davisbuilds/openclaw) - Your own personal AI assistant. Any OS. Any Platform. The lobster way. Forked [openclaw](https://github.com/openclaw/openclaw)
-- 🧑‍💻 [**vibetunnel**](https://github.com/davisbuilds/vibetunnel) - Turn any browser into your terminal & command your agents on the go. Forked [vibetunnel](https://github.com/amantus-ai/vibetunnel)
-- ✍️ [**summarize**](https://github.com/davisbuilds/summarize) - Point at any URL/YouTube/Podcast or file. Get the gist. CLI and Chrome Extension. Forked [summarize](https://github.com/steipete/summarize)
-- ⚡ [**superpowers**](https://github.com/davisbuilds/superpowers) - Claude Code superpowers: core skills library. Forked [superpowers](https://github.com/obra/superpowers)
-- 🛠️ [**anthropics-skills**](https://github.com/davisbuilds/anthropics-skills) - Public repository for Anthropic Skills. Forked [anthropics/skills](https://github.com/anthropics/skills)
-- 🤖 [**agent-scripts**](https://github.com/davisbuilds/agent-scripts) - Scripts for agents, shared between repositories. Forked [agent-scripts](https://github.com/steipete/agent-scripts)
-- 🧰 [**opcode**](https://github.com/davisbuilds/opcode) - A powerful GUI app and toolkit for Claude Code with custom agent creation. Forked [opcode](https://github.com/winfunc/opcode)
-- 💻 [**llm**](https://github.com/davisbuilds/llm) - Access large language models from the command-line. Forked [llm](https://github.com/simonw/llm)
-- 🍎 [**llm-mlx**](https://github.com/davisbuilds/llm-mlx) - Support for MLX models in LLM. Forked [llm-mlx](https://github.com/simonw/llm-mlx)
 
 <h2 align="left">GitHub Stats</h2>
 
