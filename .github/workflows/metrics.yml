@@ -52,29 +52,7 @@ jobs:
           plugin_languages_ignored: html, css, dockerfile, shell, makefile
           plugin_languages_limit: 8
 
-  habits:
-    needs: [header, isocalendar, languages]
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    steps:
-      - uses: lowlighter/metrics@latest
-        with:
-          filename: metrics/habits.svg
-          token: ${{ secrets.METRICS_SECRET }}
-          user: davisbuilds
-          template: classic
-          base: ""
-          config_timezone: ${{ secrets.USER_TIMEZONE }}
-          plugin_habits: yes
-          plugin_habits_from: 100
-          plugin_habits_days: 14
-          plugin_habits_charts: yes
-          plugin_habits_trim: yes
-          plugin_habits_charts_type: classic
-
   followup:
-    needs: [header, isocalendar, languages]
     runs-on: ubuntu-latest
     permissions:
       contents: write

@@ -56,10 +56,6 @@
   <img align="center" width="49%" src="./metrics/isocalendar.svg" />
 </a>
 <a href="https://github.com/davisbuilds">
-  <img align="center" width="49%" src="./metrics/habits.svg" />
-</a>
-
-<a href="https://github.com/davisbuilds">
   <img align="center" width="49%" src="./metrics/followup.svg" />
 </a>
 
