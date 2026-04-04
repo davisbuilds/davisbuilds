@@ -53,6 +53,7 @@ jobs:
           plugin_languages_limit: 8
 
   habits:
+    needs: [header, isocalendar, languages]
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -73,6 +74,7 @@ jobs:
           plugin_habits_charts_type: classic
 
   followup:
+    needs: [header, isocalendar, languages]
     runs-on: ubuntu-latest
     permissions:
       contents: write
