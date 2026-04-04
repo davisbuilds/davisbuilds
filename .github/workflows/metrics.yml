@@ -1,0 +1,87 @@
+name: Metrics
+on:
+  schedule: [{cron: "0 */6 * * *"}]
+  workflow_dispatch:
+  push: {branches: ["main"]}
+
+jobs:
+
+  header:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: lowlighter/metrics@latest
+        with:
+          filename: metrics/header.svg
+          token: ${{ secrets.METRICS_SECRET }}
+          user: davisbuilds
+          template: classic
+          base: header
+          config_timezone: ${{ secrets.USER_TIMEZONE }}
+
+  isocalendar:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: lowlighter/metrics@latest
+        with:
+          filename: metrics/isocalendar.svg
+          token: ${{ secrets.METRICS_SECRET }}
+          user: davisbuilds
+          template: classic
+          base: ""
+          config_timezone: ${{ secrets.USER_TIMEZONE }}
+          plugin_isocalendar: yes
+          plugin_isocalendar_duration: half-year
+
+  languages:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: lowlighter/metrics@latest
+        with:
+          filename: metrics/languages.svg
+          token: ${{ secrets.METRICS_SECRET }}
+          user: davisbuilds
+          template: classic
+          base: ""
+          plugin_languages: yes
+          plugin_languages_ignored: html, css, dockerfile, shell, makefile
+          plugin_languages_limit: 8
+
+  habits:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: lowlighter/metrics@latest
+        with:
+          filename: metrics/habits.svg
+          token: ${{ secrets.METRICS_SECRET }}
+          user: davisbuilds
+          template: classic
+          base: ""
+          config_timezone: ${{ secrets.USER_TIMEZONE }}
+          plugin_habits: yes
+          plugin_habits_from: 200
+          plugin_habits_days: 14
+          plugin_habits_charts: yes
+          plugin_habits_trim: yes
+
+  followup:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: lowlighter/metrics@latest
+        with:
+          filename: metrics/followup.svg
+          token: ${{ secrets.METRICS_SECRET }}
+          user: davisbuilds
+          template: classic
+          base: ""
+          plugin_followup: yes
+          plugin_followup_sections: user, repositories
