@@ -66,10 +66,11 @@ jobs:
           base: ""
           config_timezone: ${{ secrets.USER_TIMEZONE }}
           plugin_habits: yes
-          plugin_habits_from: 200
+          plugin_habits_from: 100
           plugin_habits_days: 14
           plugin_habits_charts: yes
           plugin_habits_trim: yes
+          plugin_habits_charts_type: classic
 
   followup:
     runs-on: ubuntu-latest
@@ -84,4 +85,4 @@ jobs:
           template: classic
           base: ""
           plugin_followup: yes
-          plugin_followup_sections: user, repositories
+          plugin_followup_sections: user
