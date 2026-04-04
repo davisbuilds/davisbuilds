@@ -25,10 +25,10 @@
 
 - 🥋 [**dojo**](https://github.com/davisbuilds/dojo) - Extensible framework for AI agents (skills, hooks, etc)
 - 📊 [**agentmonitor**](https://github.com/davisbuilds/agentmonitor) - Analytics dashboard for monitoring the (agent) situation
-- 📰 [**feed**](https://github.com/davisbuilds/feed) - Newsletter digest CLI
+- 📰 [**feed**](https://github.com/davisbuilds/feed) - Intelligent newsletter digest CLI
 - 📄 [**fetchmd**](https://github.com/davisbuilds/fetchmd) - Token-efficient webpage-to-markdown CLI for AI agents
 - 🌿 [**envdiff**](https://github.com/davisbuilds/envdiff) - Deterministic environment contract analysis CLI for repositories
-- 🔍 [**mlsearch**](https://github.com/davisbuilds/mlsearch) - Local-first semantic paper search and benchmark workflow for arXiv cs.LG
+- 🔍 [**mlsearch**](https://github.com/davisbuilds/mlsearch) - Autoresearch-esque semantic paper search experiment for arXiv cs.LG
 - 💬 [**qotd**](https://github.com/davisbuilds/qotd) - Quote of the day web app
 - 📚 [**compendium**](https://github.com/davisbuilds/compendium) - A curated collection of advice from successful entrepreneurs
 - 🧠 [**prompts**](https://github.com/davisbuilds/prompts) - Davis's prompts collection
