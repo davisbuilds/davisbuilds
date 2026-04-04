@@ -3,14 +3,7 @@
 
 > "We are what we repeatedly do. Excellence, then, is not an act, but a habit." - Aristotle<br>
 
-<h4 align="left">Links</h4>
-
-- Website: [davisbuilds.net](https://davisbuilds.net)
-- Substack: [@davisbuilds](https://substack.com/@davisbuilds?)
-- Twitter/X: [@davis_builds](https://x.com/davis_builds)
-- [LinkedIn](https://www.linkedin.com/in/nathaniel-davis-gee)
-
-<br>
+<h2 align="left">Skills</h2>
 
 <p align="left">
   <img src="https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python"/>
