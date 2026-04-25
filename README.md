@@ -27,6 +27,7 @@
 - 📊 [**agentmonitor**](https://github.com/davisbuilds/agentmonitor) - Analytics dashboard for monitoring the (agent) situation
 - 📰 [**feed**](https://github.com/davisbuilds/feed) - Intelligent newsletter digest CLI
 - 📄 [**fetchmd**](https://github.com/davisbuilds/fetchmd) - Token-efficient webpage-to-markdown CLI for AI agents
+- 🎙️ [**podsave**](https://github.com/davisbuilds/podsave) - YouTube videos into curated Obsidian notes
 - 🌿 [**envdiff**](https://github.com/davisbuilds/envdiff) - Deterministic environment contract analysis CLI for repositories
 - 🔍 [**mlsearch**](https://github.com/davisbuilds/mlsearch) - Autoresearch-esque semantic paper search experiment for arXiv cs.LG
 - 💬 [**qotd**](https://github.com/davisbuilds/qotd) - Quote of the day web app
