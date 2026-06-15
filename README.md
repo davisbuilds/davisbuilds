@@ -32,8 +32,7 @@
 - 🔍 [**mlsearch**](https://github.com/davisbuilds/mlsearch) - Autoresearch-esque semantic paper search experiment for arXiv cs.LG
 - 💬 [**qotd**](https://github.com/davisbuilds/qotd) - Quote of the day web app
 - 📚 [**compendium**](https://github.com/davisbuilds/compendium) - A curated collection of advice from successful entrepreneurs
-- 🧠 [**prompts**](https://github.com/davisbuilds/prompts) - Davis's prompts collection
-- 🧪 [**resnet-cifar10**](https://github.com/davisbuilds/resnet-cifar10) - Codex 5.3 one-shot experiment
+- 🎯 [**oneshots**](https://github.com/davisbuilds/oneshots) - Agent oneshot capability demos: zero-dependency single-file artifacts
 - 🔤 [**slugify**](https://github.com/davisbuilds/slugify) - Spec driven library for AI agents, convert any text to URL-safe slugs
 - 🔡 [**caseshift**](https://github.com/davisbuilds/caseshift) - Spec driven library for AI agents, universal case conversion
 
