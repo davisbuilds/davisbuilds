@@ -23,6 +23,7 @@ jobs:
           config_timezone: ${{ secrets.USER_TIMEZONE }}
 
   isocalendar:
+    needs: header
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -39,6 +40,7 @@ jobs:
           plugin_isocalendar_duration: half-year
 
   languages:
+    needs: isocalendar
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -55,6 +57,7 @@ jobs:
           plugin_languages_limit: 8
 
   followup:
+    needs: languages
     runs-on: ubuntu-latest
     permissions:
       contents: write
