@@ -16,7 +16,7 @@
 - 🔍 [**mlsearch**](https://github.com/davisbuilds/mlsearch) - Autoresearch-esque semantic paper search experiment for arXiv cs.LG
 - 💬 [**qotd**](https://github.com/davisbuilds/qotd) - Quote of the day web app
 - 📚 [**compendium**](https://github.com/davisbuilds/compendium) - A curated collection of advice from successful entrepreneurs
-- 🎯 [**oneshots**](https://github.com/davisbuilds/oneshots) - Agent oneshot capability demos: zero-dependency single-file artifacts
+- 🎯 [**oneshots**](https://github.com/davisbuilds/oneshots) - Agent-run capability demos, from single-file experiences to long-horizon visual work
 - 🔤 [**slugify**](https://github.com/davisbuilds/slugify) - Spec driven library for AI agents, convert any text to URL-safe slugs
 
 <h2 align="left">Skills</h2>
