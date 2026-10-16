@@ -24,6 +24,9 @@ concurrency:
 
 jobs:
   render:
+    # The commit step pushes to main, so a manual run from any other branch
+    # would publish that branch's commits; only main may run it.
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-24.04
     timeout-minutes: 10
     permissions:
