@@ -1,0 +1,60 @@
+name: Profile
+
+# Re-renders the README's images (scripts/render_profile.py) and commits them
+# only when they changed. The readout's date is a day, so at most one commit a
+# day. Reads only public data, so the job's own token is enough.
+
+on:
+  schedule:
+    - cron: "17 6 * * *"
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - ".github/workflows/profile.yml"
+      - "assets/fonts/**"
+      - "scripts/render_profile.py"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: profile
+  cancel-in-progress: false
+
+jobs:
+  render:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
+        with:
+          version: "0.11.19"
+          enable-cache: false
+
+      - name: Render images
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: uv run --no-project --with fonttools==4.60.1 --with brotli==1.1.0 python scripts/render_profile.py
+
+      - name: Commit changed images
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          git add profile
+          if git diff --cached --quiet; then
+            echo "Images unchanged"
+            exit 0
+          fi
+          git -c user.name="github-actions[bot]" \
+              -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
+              commit -q -m "Refresh profile images"
+          git push "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" HEAD:main
