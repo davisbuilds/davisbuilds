@@ -12,6 +12,8 @@ counts come from public, non-fork repositories through the REST API.
 
 GitHub strips CSS and web fonts from READMEs, so each SVG embeds its own fonts,
 instanced from the site's variable fonts and subset to the characters it uses.
+Motion is CSS inside the SVG too. It sits behind prefers-reduced-motion, and the
+markup without it is a complete still, for that and for anything that won't animate.
 
 Needs fontTools and brotli: uv run --with fonttools --with brotli python ...
 A calendar that fails its parse control exits 1 without writing anything.
@@ -51,10 +53,12 @@ THEMES = {
     "light": {
         "paper": "#e9ece8", "sheet": "#f4f5f2", "ink": "#16212b", "muted": "#5a6772",
         "rule": "#c2cbd2", "grid": "rgba(58,98,138,0.07)", "signal": "#b7460a",
+        "agent": "#ee6a1c", "agent_dark": "#b9500f", "agent_hi": "#ffb27a",
     },
     "dark": {
         "paper": "#0d1317", "sheet": "#121a1f", "ink": "#dbe3e7", "muted": "#8796a0",
         "rule": "#2a3740", "grid": "rgba(140,180,210,0.05)", "signal": "#ff7a33",
+        "agent": "#ff7a33", "agent_dark": "#c4561a", "agent_hi": "#ffc39a",
     },
 }
 
@@ -216,6 +220,7 @@ class Svg:
     def __init__(self, height: int, theme: dict[str, str], title: str):
         self.height, self.t, self.title = height, theme, title
         self.parts: list[str] = []
+        self.css = ""
         self.text: dict[str, str] = {face: "" for face in FACES}
 
     def add(self, markup: str) -> None:
@@ -245,7 +250,7 @@ class Svg:
         return (
             f'<svg xmlns="http://www.w3.org/2000/svg" width="{WIDTH}" height="{self.height}" '
             f'viewBox="0 0 {WIDTH} {self.height}" role="img" aria-label="{html.escape(self.title)}">'
-            f"<title>{html.escape(self.title)}</title><style>{faces}</style>"
+            f"<title>{html.escape(self.title)}</title><style>{faces}{self.css}</style>"
             f'<defs><pattern id="grid" width="24" height="24" patternUnits="userSpaceOnUse">'
             f'<path d="M24 0H0V24" fill="none" stroke="{t["grid"]}" stroke-width="1"/></pattern></defs>'
             f'<rect width="{WIDTH}" height="{self.height}" fill="{t["sheet"]}"/>'
@@ -260,17 +265,105 @@ class Svg:
 # Images
 # --------------------------------------------------------------------------
 
+# The pixel crew, from davisbuilds.net src/scripts/intro.ts. (x, y) is where the
+# sprite's feet meet the ground, at its horizontal center.
+WORKER = ["O......O", "O.OOOO.O", ".OHOOOO.", ".OEOOEO.", ".OOOOOO.", "..DDDD..", "..DDDD.."]
+LEGS = ["..D..D..", ".D....D."]
+FOREMAN = ["..KKKK..", ".KKKKKK.", "KKKKKKKK", ".OOOOOO.", ".OEOOEO.", ".OOOOOO.", "..OOOO..", ".ODDDDO.", "..DDDD..", "..D..D.."]
+GEAR = "M16.4 4.41L17.11 1.73A18.5 18.5 0 0 1 22.89 1.73L23.6 4.41A16 16 0 0 1 28.48 6.43L30.87 5.03A18.5 18.5 0 0 1 34.97 9.13L33.57 11.52A16 16 0 0 1 35.59 16.4L38.27 17.11A18.5 18.5 0 0 1 38.27 22.89L35.59 23.6A16 16 0 0 1 33.57 28.48L34.97 30.87A18.5 18.5 0 0 1 30.87 34.97L28.48 33.57A16 16 0 0 1 23.6 35.59L22.89 38.27A18.5 18.5 0 0 1 17.11 38.27L16.4 35.59A16 16 0 0 1 11.52 33.57L9.13 34.97A18.5 18.5 0 0 1 5.03 30.87L6.43 28.48A16 16 0 0 1 4.41 23.6L1.73 22.89A18.5 18.5 0 0 1 1.73 17.11L4.41 16.4A16 16 0 0 1 6.43 11.52L5.03 9.13A18.5 18.5 0 0 1 9.13 5.03L11.52 6.43A16 16 0 0 1 16.4 4.41Z"
+
+
+def sprite(t: dict[str, str], rows: list[str], x: float, y: float, p: int) -> str:
+    colors = {"O": t["agent"], "D": t["agent_dark"], "H": t["agent_hi"], "K": t["agent_hi"], "E": t["ink"]}
+    ox, oy = round(x - 4 * p), round(y - len(rows) * p)
+    paths: dict[str, str] = {}
+    for j, row in enumerate(rows):
+        for i, ch in enumerate(row):
+            if ch != ".":
+                paths[ch] = paths.get(ch, "") + f"M{ox + i * p} {oy + j * p}h{p}v{p}h-{p}z"
+    return '<g shape-rendering="crispEdges">' + "".join(f'<path fill="{colors[c]}" d="{d}"/>' for c, d in paths.items()) + "</g>"
+
+
+def worker(t: dict[str, str], x: float, y: float, legs: int = 0, p: int = 3) -> str:
+    return sprite(t, [*WORKER, LEGS[legs]], x, y, p)
+
+
+def walker(t: dict[str, str], x: float, y: float, phase: int, p: int = 2) -> str:
+    """A worker with both leg frames, which LANE_MOTION alternates."""
+    body = sprite(t, WORKER, x, y - p, p)
+    legs = "".join(f'<g class="step-{"ab"[(i + phase) % 2]}">{sprite(t, [LEGS[i]], x, y, p)}</g>' for i in (0, 1))
+    return body + legs
+
+
+def foreman(t: dict[str, str], x: float, y: float, ticks: int = 4, p: int = 3) -> str:
+    ox, oy = round(x - 4 * p), round(y - len(FOREMAN) * p)
+    cx, cy = ox + 9 * p, oy + 3 * p
+    board = (f'<g shape-rendering="crispEdges"><rect x="{cx + .5}" y="{cy + .5}" width="12" height="16" fill="{t["sheet"]}" stroke="{t["ink"]}"/>'
+             f'<rect x="{cx + 4}" y="{cy - 1}" width="5" height="2" fill="{t["ink"]}"/>')
+    for i in range(ticks):
+        board += f'<rect x="{cx + 3}" y="{cy + 3 + i * 3}" width="7" height="1" fill="{t["signal"]}"/>'
+    head, rest = FOREMAN[:7], FOREMAN[7:]
+    return (f'<g class="nod">{sprite(t, head, x, y - len(rest) * p, p)}</g>' + sprite(t, rest, x, y, p) + board + "</g>")
+
+
+def tick(t: dict[str, str], x: float, y: float, css: str = "") -> str:
+    attr = f' class="{css}"' if css else ""
+    return (f'<path{attr} d="M{x - 5} {y}l3.5 4l7.5 -9" fill="none" stroke="{t["signal"]}" stroke-width="2.4" '
+            'stroke-linecap="round" stroke-linejoin="round"/>')
+
+
+# Every 8 s the gear turns one tooth (the turn lands where it started) and the
+# foreman nods and signs off.
+SIGN_OFF_MOTION = """@media (prefers-reduced-motion:no-preference){
+.gear{transform-origin:20px 20px;animation:gear 8s ease-in-out infinite}
+.nod{animation:nod 8s linear infinite}
+.check{animation:check 8s ease-out infinite}
+@keyframes gear{0%,88%{transform:rotate(0)}100%{transform:rotate(45deg)}}
+@keyframes nod{0%,88%,94%,100%{transform:none}91%{transform:translateY(2px)}}
+@keyframes check{0%,88%,96%,100%{transform:none}92%{transform:translateY(-5px)}}
+}"""
+
+# The crew files out along the bottom rule and past the sheet's edge, then the
+# next crew comes along. The still is them part way, one leg frame showing.
+LANE_MOTION = """.step-b{opacity:0}
+@media (prefers-reduced-motion:no-preference){
+.lane{animation:lane 11s linear infinite}
+.step-a,.step-b{animation:step .5s linear infinite}
+.step-b{animation-delay:-.25s}
+@keyframes lane{0%{transform:translateX(-100px);opacity:0}5%{opacity:1}60%{transform:translateX(120px);opacity:1}60.01%,100%{transform:translateX(120px);opacity:0}}
+@keyframes step{0%,49.9%{opacity:1}50%,100%{opacity:0}}
+}"""
+
+
+def gear_stamp(svg: "Svg", x: float, y: float, size: float) -> None:
+    t = svg.t
+    svg.add(f'<svg x="{x}" y="{y}" width="{size}" height="{size}" viewBox="0 0 40 40" overflow="visible">'
+            f'<path class="gear" d="{GEAR}" fill="none" stroke="{t["ink"]}" stroke-width="2"/></svg>')
+    svg.add(svg.txt(x + size / 2, y + size / 2 + size * 0.1, "DG", "display", size * 0.28, t["ink"], "middle",
+                    ' letter-spacing="-0.02em"'))
+
+
 
 def masthead(theme: dict[str, str]) -> str:
     t = theme
-    svg = Svg(244, t, "Hi, I'm Davis. Systems engineer who got obsessed with building.")
+    svg = Svg(244, t, "Hi, I'm Davis. Systems engineer obsessed with building.")
     svg.add(f'<line x1="0" y1="34.5" x2="{WIDTH}" y2="34.5" stroke="{t["ink"]}"/>')
     svg.label(20, 22, "Spec. 001 · Operator")
     svg.label(WIDTH - 20, 22, "Sheet 1 of 1 · davisbuilds.net", anchor="end")
     svg.add(svg.txt(18, 112, [("Hi, I'm ", None), ("Davis", t["signal"])], "display", 62, t["ink"],
                     extra=' letter-spacing="-0.025em"'))
-    svg.add(svg.txt(20, 152, [("Systems engineer who got obsessed with ", None), ("building", t["signal"]),
+    svg.add(svg.txt(20, 152, [("Systems engineer obsessed with ", None), ("building", t["signal"]),
                               (".", None)], "sub", 23, t["ink"], extra=' letter-spacing="-0.01em"'))
+    svg.css = SIGN_OFF_MOTION
+    gear_stamp(svg, 762, 50, 58)
+    # Two of the crew carry a finished panel in; the foreman signs it off.
+    px, pw = 584, 104
+    svg.add(f'<g shape-rendering="crispEdges"><rect x="{px + .5}" y="130.5" width="{pw}" height="24" fill="{t["sheet"]}" stroke="{t["ink"]}"/>'
+            f'<rect x="{px + 8}" y="137" width="52" height="3" fill="{t["ink"]}"/><rect x="{px + 8}" y="144" width="78" height="3" fill="{t["rule"]}"/></g>')
+    svg.add(worker(t, px + 26, 184, 0))
+    svg.add(worker(t, px + pw - 26, 184, 1))
+    svg.add(foreman(t, 748, 184))
+    svg.add(tick(t, 750, 142, "check"))
     top = 184
     svg.add(f'<line x1="0" y1="{top + 0.5}" x2="{WIDTH}" y2="{top + 0.5}" stroke="{t["ink"]}"/>')
     cells = [
@@ -393,6 +486,20 @@ def readout(theme: dict[str, str], cal: Calendar, repos: Repos, read: dt.date) -
         opacity = "1" if i == 0 else shades[i]
         svg.add(f'<rect x="{cx}" y="{cy - 8}" width="8" height="8" fill="{color}" fill-opacity="{opacity}"/>')
         svg.add(svg.txt(cx + 14, cy, f"{name} {share * 100:.1f}%", "mono", 11, t["ink"]))
+
+    # The crew. Each one stands somewhere the data puts it: beside the best day,
+    # delivering today's cell, and filing out along the bottom rule.
+    svg.add(worker(t, 806, 128, 0))
+    svg.add(tick(t, 808, 92))
+    today = cal.days[-1].date
+    tx = x0 + (today - start).days // 7 * pitch
+    ty = y0 + ((today.weekday() + 1) % 7) * pitch
+    wx = tx + pitch + 12
+    svg.add(f'<rect x="{wx - cell / 2}" y="{ty + cell - 16 - cell}" width="{cell}" height="{cell}" fill="{t["signal"]}"/>')
+    svg.add(worker(t, wx, ty + cell, 0, 2))
+    svg.css = LANE_MOTION
+    crew = "".join(walker(t, wx, height - 35, i) for i, wx in enumerate((726, 758, 790)))
+    svg.add(f'<g class="lane">{crew}</g>')
 
     # Provenance
     svg.add(f'<line x1="0" y1="{height - 34.5}" x2="{WIDTH}" y2="{height - 34.5}" stroke="{t["ink"]}"/>')
