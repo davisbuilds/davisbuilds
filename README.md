@@ -21,7 +21,7 @@
 | `MLSEARCH` | [mlsearch](https://github.com/davisbuilds/mlsearch) | Autoresearch experiment in semantic search over arXiv cs.LG | Python |
 | `PODSAVE` | [podsave](https://github.com/davisbuilds/podsave) | A YouTube URL becomes a curated Obsidian note | Python |
 | `FEED` | [feed](https://github.com/davisbuilds/feed) | Newsletter digest CLI | Python |
-| `INFLIDX` | [Influence Index](https://github.com/davisbuilds/influence-index) | A curated collection of advice from successful entrepreneurs | TypeScript |
+| `INFLIDX` | [Influence Index](https://github.com/davisbuilds/influence-index) | An illustrated field guide to people who shaped industries, institutions, and culture | TypeScript |
 | `SITE` | [davisbuilds.net](https://github.com/davisbuilds/davisbuilds.net) | The source for davisbuilds.net, a static Astro build | TypeScript |
 
 <picture>
