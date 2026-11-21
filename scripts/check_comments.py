@@ -133,7 +133,11 @@ EXCUSE_PHRASE = re.compile(
 )
 VERSION_TAG = re.compile(r"#\s*(pin@)?v?\d+(\.\d+)*\s*$")
 SHA_PIN = re.compile(r"@[0-9a-f]{7,}\b")
-GO_DECL = re.compile(r"(func|type|var|const|package)\b")
+YAML_BLOCK = re.compile(r"^(\s*)(?:-\s+)?(?:([\w.-]+)\s*:\s*)?[|>][-+0-9]*\s*(#.*)?$")
+YAML_SCRIPT_KEYS = {"run", "script", "before_script", "after_script", "command"}
+PEP263 = re.compile(r"#.*?coding[:=][ \t]*[-_.a-zA-Z0-9]+")
+EMBEDDED = re.compile(r"<(script|style)\b[^>]*>", re.IGNORECASE)
+GO_DECL = re.compile(r"(func|type|var|const|package)\b|import\s+\"C\"")
 HEREDOC = re.compile(r'<<-?\s*([\'"]?)([A-Za-z_][A-Za-z0-9_]*)\1')
 
 
@@ -247,17 +251,18 @@ def python_comments(text: str) -> Iterator[Raw]:
         if tok.type != tokenize.COMMENT:
             continue
         row, col = tok.start
-        if row <= 2 and (tok.string.startswith("#!") or "coding" in tok.string):
+        if row <= 2 and (tok.string.startswith("#!") or PEP263.match(tok.string)):
             continue
         full = tok.line[:col].strip() == ""
         yield row, row, tok.string, full, tok.string.startswith("#:")
 
 
-def scan_hash_line(line: str, shell: bool, quote: str | None) -> tuple[int, str | None]:
+def heredoc_delimiter(line: str) -> str | None:
+    quote = None
     i = 0
     while i < len(line):
         ch = line[i]
-        if ch == "\\" and quote != "'" and (shell or quote == '"'):
+        if ch == "\\" and quote != "'":
             i += 2
             continue
         if quote:
@@ -266,17 +271,73 @@ def scan_hash_line(line: str, shell: bool, quote: str | None) -> tuple[int, str 
         elif ch in "'\"":
             quote = ch
         elif ch == "#" and i > 0 and line[i - 1] in " \t":
+            return None
+        elif line.startswith("<<<", i):
+            i += 3
+            continue
+        elif line.startswith("<<", i):
+            match = HEREDOC.match(line, i)
+            if match:
+                return match.group(2)
+            i += 2
+            continue
+        i += 1
+    return None
+
+
+def scan_hash_line(
+    line: str, shell: bool, quote: str | None, yaml: bool = False
+) -> tuple[int, str | None]:
+    i = 0
+    while i < len(line):
+        ch = line[i]
+        if ch == "\\" and quote != "'" and (shell or quote == '"'):
+            i += 2
+            continue
+        if quote:
+            if yaml and quote == "'" and line.startswith("''", i):
+                i += 2
+                continue
+            if ch == quote:
+                quote = None
+        elif ch in "'\"":
+            before = line[:i].rstrip()
+            if not yaml or not before or before[-1] in ":-[{,":
+                quote = ch
+        elif ch == "#" and i > 0 and line[i - 1] in " \t":
             return i, quote
         i += 1
     return -1, quote
 
 
-def hash_comments(text: str, shell: bool, carry: bool = False) -> Iterator[Raw]:
+def hash_comments(
+    text: str,
+    shell: bool,
+    carry: bool = False,
+    yaml: bool = False,
+    toml: bool = False,
+) -> Iterator[Raw]:
     heredoc = None
     header = shell
     quote: str | None = None
+    block_indent: int | None = None
+    block_script = False
+    multiline: str | None = None
     for row, line in enumerate(text.split("\n"), 1):
         stripped = line.strip()
+        if block_indent is not None:
+            indent = len(line) - len(line.lstrip())
+            if not stripped:
+                continue
+            if indent > block_indent:
+                if block_script and stripped.startswith("#"):
+                    yield row, row, stripped, True, False
+                continue
+            block_indent = None
+        if multiline:
+            if multiline in line:
+                multiline = None
+            continue
         if heredoc:
             if stripped == heredoc:
                 heredoc = None
@@ -287,15 +348,24 @@ def hash_comments(text: str, shell: bool, carry: bool = False) -> Iterator[Raw]:
             yield row, row, stripped, True, header
             continue
         header = False
-        at, after = scan_hash_line(line, shell, quote)
+        at, after = scan_hash_line(line, shell, quote, yaml)
         quote = after if carry else None
         pinned = at != -1 and SHA_PIN.search(line[:at]) and VERSION_TAG.match(line[at:])
         if at != -1 and not pinned:
             yield row, row, line[at:].rstrip(), False, False
         if shell:
-            match = HEREDOC.search(line if at == -1 else line[:at])
+            heredoc = heredoc_delimiter(line)
+        code = line if at == -1 else line[:at]
+        if yaml:
+            match = YAML_BLOCK.match(code)
             if match:
-                heredoc = match.group(2)
+                block_indent = len(match.group(1))
+                block_script = match.group(2) in YAML_SCRIPT_KEYS
+        if toml:
+            for delim in ('"""', "'''"):
+                if code.count(delim) % 2 == 1:
+                    multiline = delim
+                    break
 
 
 def sql_comments(text: str) -> Iterator[Raw]:
@@ -320,7 +390,7 @@ def skip_quoted(text: str, i: int) -> int:
     return n
 
 
-def skip_template(text: str, i: int) -> int:
+def skip_template(text: str, i: int, found: list[tuple[int, int]]) -> int:
     j, n = i + 1, len(text)
     while j < n:
         c = text[j]
@@ -329,20 +399,30 @@ def skip_template(text: str, i: int) -> int:
         elif c == "`":
             return j + 1
         elif text.startswith("${", j):
-            j = skip_expression(text, j + 2)
+            j = skip_expression(text, j + 2, found)
         else:
             j += 1
     return n
 
 
-def skip_expression(text: str, j: int) -> int:
+def skip_expression(text: str, j: int, found: list[tuple[int, int]]) -> int:
     depth, n = 0, len(text)
     while j < n:
         c = text[j]
         if c in "\"'":
             j = skip_quoted(text, j)
         elif c == "`":
-            j = skip_template(text, j)
+            j = skip_template(text, j, found)
+        elif text.startswith("//", j):
+            end = text.find("\n", j)
+            end = n if end == -1 else end
+            found.append((j, end))
+            j = end
+        elif text.startswith("/*", j):
+            end = text.find("*/", j + 2)
+            end = n if end == -1 else end + 2
+            found.append((j, end))
+            j = end
         elif c == "{":
             depth += 1
             j += 1
@@ -393,6 +473,8 @@ def c_comments(
     markup: bool = False,
     html_only: bool = False,
     regex: bool = False,
+    raw_backticks: bool = False,
+    swift_raw: bool = False,
 ) -> Iterator[Raw]:
     i, row, n = 0, 1, len(text)
     line_start = 0
@@ -416,9 +498,30 @@ def c_comments(
             i = end
             continue
         if html_only:
+            embedded = EMBEDDED.match(text, i)
+            if embedded:
+                kind = embedded.group(1).lower()
+                body_start = embedded.end()
+                body_end = text.lower().find(f"</{kind}", body_start)
+                body_end = n if body_end == -1 else body_end
+                base = row + text.count("\n", i, body_start)
+                script = kind == "script"
+                for found in c_comments(
+                    text[body_start:body_end], line_comments=script, regex=script
+                ):
+                    yield found[0] + base - 1, found[1] + base - 1, *found[2:]
+                newlines = text.count("\n", i, body_end)
+                if newlines:
+                    row += newlines
+                    line_start = text.rfind("\n", i, body_end) + 1
+                i = body_end
+                continue
             i += 1
             continue
         two = text[i : i + 2]
+        if line_comments and two == "//" and i > 0 and text[i - 1] == ":":
+            i += 2
+            continue
         if line_comments and two == "//":
             end = text.find("\n", i)
             end = n if end == -1 else end
@@ -446,13 +549,38 @@ def c_comments(
             row += text.count("\n", i, end)
             i = end
             continue
+        j = -1
+        if swift_raw and ch == "#":
+            k = i
+            while k < n and text[k] == "#":
+                k += 1
+            if k < n and text[k] == '"':
+                multi = text.startswith('"""', k)
+                close = ('"""' if multi else '"') + "#" * (k - i)
+                end = text.find(close, k + (3 if multi else 1))
+                j = n if end == -1 else end + len(close)
+        elif raw_backticks and ch == "`":
+            end = text.find("`", i + 1)
+            j = n if end == -1 else end + 1
+        if j != -1:
+            newlines = text.count("\n", i, j)
+            if newlines:
+                row += newlines
+                line_start = text.rfind("\n", i, j) + 1
+            i = j
+            continue
         if ch in "\"'`" or (regex and ch == "/" and starts_regex(text, i)):
+            nested: list[tuple[int, int]] = []
             if ch == "`":
-                j = skip_template(text, i)
+                j = skip_template(text, i, nested)
             elif ch == "/":
                 j = skip_regex(text, i)
             else:
                 j = skip_quoted(text, i)
+            for start, end in nested:
+                start_row = text.count("\n", 0, start) + 1
+                raw = text[start:end]
+                yield start_row, start_row + raw.count("\n"), raw.rstrip(), False, False
             newlines = text.count("\n", i, j)
             if newlines:
                 row += newlines
@@ -483,7 +611,15 @@ def raw_comments(path: str, text: str) -> list[Raw]:
     if lang == "shell":
         return list(hash_comments(text, shell=True, carry=True))
     if lang == "hash":
-        return list(hash_comments(text, shell=False))
+        ext = os.path.splitext(path)[1].lower()
+        return list(
+            hash_comments(
+                text,
+                shell=False,
+                yaml=ext in (".yml", ".yaml"),
+                toml=ext == ".toml",
+            )
+        )
     if lang == "sql":
         return list(sql_comments(text))
     if lang == "css":
@@ -494,7 +630,15 @@ def raw_comments(path: str, text: str) -> list[Raw]:
         return list(c_comments(text, markup=True, html_only=True))
     if lang in ("c", "go"):
         js = os.path.splitext(path)[1].lower() in JS_FAMILY
-        found = list(c_comments(text, regex=js))
+        ext = os.path.splitext(path)[1].lower()
+        found = list(
+            c_comments(
+                text,
+                regex=js,
+                raw_backticks=ext == ".go",
+                swift_raw=ext == ".swift",
+            )
+        )
         if lang == "go":
             doc = go_doc_rows(text, found)
             found = [(*c[:4], c[4] or c[0] in doc) for c in found]
