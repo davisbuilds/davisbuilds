@@ -369,10 +369,69 @@ def hash_comments(
 
 
 def sql_comments(text: str) -> Iterator[Raw]:
-    for row, line in enumerate(text.split("\n"), 1):
-        stripped = line.strip()
-        if stripped.startswith("--"):
-            yield row, row, stripped, True, False
+    i, row, n = 0, 1, len(text)
+    line_start = 0
+    while i < n:
+        ch = text[i]
+        if ch == "\n":
+            row += 1
+            line_start = i + 1
+            i += 1
+            continue
+        if text.startswith("--", i):
+            end = text.find("\n", i)
+            end = n if end == -1 else end
+            full = text[line_start:i].strip() == ""
+            yield row, row, text[i:end].rstrip(), full, False
+            i = end
+            continue
+        if text.startswith("/*", i):
+            end = text.find("*/", i + 2)
+            end = n if end == -1 else end + 2
+            raw = text[i:end]
+            full = text[line_start:i].strip() == ""
+            start_row = row
+            row += raw.count("\n")
+            if "\n" in raw:
+                line_start = i + raw.rfind("\n") + 1
+            yield start_row, row, raw, full, False
+            i = end
+            continue
+        if ch in "'\"":
+            j = i + 1
+            while j < n:
+                if text[j] == ch:
+                    if text.startswith(ch * 2, j):
+                        j += 2
+                        continue
+                    j += 1
+                    break
+                j += 1
+            newlines = text.count("\n", i, j)
+            if newlines:
+                row += newlines
+                line_start = text.rfind("\n", i, j) + 1
+            i = j
+            continue
+        i += 1
+
+
+def shifted(found: Iterator[Raw], base: int) -> Iterator[Raw]:
+    for start, end, raw, full, doc in found:
+        yield start + base, end + base, raw, full, doc
+
+
+def markup_comments(text: str) -> Iterator[Raw]:
+    body_at = 0
+    if text.startswith("---"):
+        close = text.find("\n---", 3)
+        if close != -1:
+            yield from c_comments(text[3:close], regex=True)
+            body_at = close + 4
+    base = text.count("\n", 0, body_at)
+    yield from shifted(
+        c_comments(text[body_at:], markup=True, html_only=True, expressions=True), base
+    )
 
 
 def skip_quoted(text: str, i: int) -> int:
@@ -475,6 +534,7 @@ def c_comments(
     regex: bool = False,
     raw_backticks: bool = False,
     swift_raw: bool = False,
+    expressions: bool = False,
 ) -> Iterator[Raw]:
     i, row, n = 0, 1, len(text)
     line_start = 0
@@ -510,6 +570,17 @@ def c_comments(
                     text[body_start:body_end], line_comments=script, regex=script
                 ):
                     yield found[0] + base - 1, found[1] + base - 1, *found[2:]
+                newlines = text.count("\n", i, body_end)
+                if newlines:
+                    row += newlines
+                    line_start = text.rfind("\n", i, body_end) + 1
+                i = body_end
+                continue
+            if expressions and ch == "{":
+                body_end = skip_expression(text, i + 1, [])
+                inner = text[i + 1 : max(i + 1, body_end - 1)]
+                base = row - 1
+                yield from shifted(c_comments(inner, regex=True), base)
                 newlines = text.count("\n", i, body_end)
                 if newlines:
                     row += newlines
@@ -625,7 +696,7 @@ def raw_comments(path: str, text: str) -> list[Raw]:
     if lang == "css":
         return list(c_comments(text, line_comments=False))
     if lang == "markup":
-        return list(c_comments(text, markup=True, regex=True))
+        return list(markup_comments(text))
     if lang == "html":
         return list(c_comments(text, markup=True, html_only=True))
     if lang in ("c", "go"):
@@ -675,6 +746,7 @@ def blocks(path: str, text: str) -> list[Block]:
             and not prev["directive"]
             and start == prev["end"] + 1
             and start == end
+            and not raw.lstrip().startswith(("/*", "<!--"))
         )
         if joinable and prev is not None:
             prev["end"] = end
@@ -685,7 +757,7 @@ def blocks(path: str, text: str) -> list[Block]:
             if not full
             else (
                 "line"
-                if start == end and not raw.lstrip().startswith("/*")
+                if start == end and not raw.lstrip().startswith(("/*", "<!--"))
                 else "block"
             )
         )
