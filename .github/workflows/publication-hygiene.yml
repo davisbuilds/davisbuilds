@@ -25,3 +25,6 @@ jobs:
 
       - name: Check tracked text and detector controls
         run: python3 scripts/check_publication_hygiene.py
+
+      - name: Comment ratchet
+        run: python3 scripts/check_comments.py
