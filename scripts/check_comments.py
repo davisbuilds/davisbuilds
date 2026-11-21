@@ -25,6 +25,9 @@ The baseline's ``exclude`` list holds extra glob patterns (``**`` spans
 directories) for files whose comments are data, such as test fixtures.
 """
 
+# WHY: repos vendor this file byte-for-byte but format at different line lengths,
+# so formatting is frozen here and the canonical copy is kept at 88 columns.
+# fmt: off
 from __future__ import annotations
 
 import ast
@@ -119,7 +122,7 @@ DIRECTIVE = re.compile(
     r"|swiftlint:|swift-format-ignore|MARK:|#?region\b|#?endregion\b|nolint|go:\w|\+build"
     r"|shellcheck\s|yamllint|zizmor:|renovate:|hadolint|syntax=|escape=|check=|yaml-language-server"
     r"|SPDX-|Copyright|\(c\)|-\*-|vim:|\+goose|migrate:|<reference\s"
-    r"|(pin@)?(v\d+(\.\d+)*|\d+\.\d+(\.\d+)*)\s*$"
+    r"|\[if\s|<!\[endif\]"
     r"|(todo)?ruleid:|(todo)?ok:|nosemgrep|AUTO-GENERATED|DO NOT EDIT|Code generated)",
     re.IGNORECASE,
 )
@@ -128,6 +131,8 @@ EXCUSE_PHRASE = re.compile(
     r"\b(for now|quick (fix|hack)|temporary (fix|hack|workaround)|hacky)\b",
     re.IGNORECASE,
 )
+VERSION_TAG = re.compile(r"#\s*(pin@)?v?\d+(\.\d+)*\s*$")
+SHA_PIN = re.compile(r"@[0-9a-f]{7,}\b")
 GO_DECL = re.compile(r"(func|type|var|const|package)\b")
 HEREDOC = re.compile(r'<<-?\s*([\'"]?)([A-Za-z_][A-Za-z0-9_]*)\1')
 
@@ -197,7 +202,7 @@ def language(path: str, text: str) -> str | None:
 
 def comment_body(raw: str) -> str:
     body = raw.strip()
-    for opener in ("//", "/*", "#", "--"):
+    for opener in ("<!--", "//", "/*", "#", "--"):
         if body.startswith(opener):
             body = body[len(opener) :]
             break
@@ -284,7 +289,8 @@ def hash_comments(text: str, shell: bool, carry: bool = False) -> Iterator[Raw]:
         header = False
         at, after = scan_hash_line(line, shell, quote)
         quote = after if carry else None
-        if at != -1:
+        pinned = at != -1 and SHA_PIN.search(line[:at]) and VERSION_TAG.match(line[at:])
+        if at != -1 and not pinned:
             yield row, row, line[at:].rstrip(), False, False
         if shell:
             match = HEREDOC.search(line if at == -1 else line[:at])
