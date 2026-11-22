@@ -1,8 +1,7 @@
 name: Profile
 
-# Re-renders the README's images (scripts/render_profile.py) and commits them
-# only when they changed. The readout's date is a day, so at most one commit a
-# day. Reads only public data, so the job's own token is enough.
+# WHY: the readout's date is a day, so the job commits at most once a day. It
+# reads only public data, so the job's own token is enough.
 
 on:
   schedule:
@@ -24,7 +23,7 @@ concurrency:
 
 jobs:
   render:
-    # The commit step pushes to main, so a manual run from any other branch
+    # WHY: the commit step pushes to main, so a manual run from any other branch
     # would publish that branch's commits; only main may run it.
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-24.04

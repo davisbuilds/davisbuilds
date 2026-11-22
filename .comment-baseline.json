@@ -2,8 +2,6 @@
   "version": 1,
   "exclude": [],
   "files": {
-    ".github/workflows/profile.yml": 5,
-    "scripts/check_publication_hygiene.py": 4,
-    "scripts/render_profile.py": 32
+    "scripts/check_publication_hygiene.py": 4
   }
 }
