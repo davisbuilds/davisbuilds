@@ -250,8 +250,7 @@ class Svg:
         )
 
 
-# WHY: the pixel crew is copied from davisbuilds.net src/scripts/intro.ts. (x, y)
-# is where the sprite's feet meet the ground, at its horizontal center.
+# WHY: the pixel crew is copied from davisbuilds.net src/scripts/intro.ts.
 WORKER = ["O......O", "O.OOOO.O", ".OHOOOO.", ".OEOOEO.", ".OOOOOO.", "..DDDD..", "..DDDD.."]
 LEGS = ["..D..D..", ".D....D."]
 FOREMAN = ["..KKKK..", ".KKKKKK.", "KKKKKKKK", ".OOOOOO.", ".OEOOEO.", ".OOOOOO.", "..OOOO..", ".ODDDDO.", "..DDDD..", "..D..D.."]
@@ -259,6 +258,7 @@ GEAR = "M16.4 4.41L17.11 1.73A18.5 18.5 0 0 1 22.89 1.73L23.6 4.41A16 16 0 0 1 2
 
 
 def sprite(t: dict[str, str], rows: list[str], x: float, y: float, p: int) -> str:
+    """Draw pixel rows with (x, y) where the sprite's feet meet the ground, at its horizontal center."""
     colors = {"O": t["agent"], "D": t["agent_dark"], "H": t["agent_hi"], "K": t["agent_hi"], "E": t["ink"]}
     ox, oy = round(x - 4 * p), round(y - len(rows) * p)
     paths: dict[str, str] = {}
@@ -494,9 +494,9 @@ def verify_detectors() -> None:
                 f'<tool-tip for="c-{date}">{tip} on that day.</tool-tip>')
     start = dt.date(2025, 1, 1)
     counts = [1] * 365
-    counts[10] = 0  # WHY: breaks the first run after 10 days
+    counts[10] = 0
     counts[200] = 0
-    counts[-1] = 0  # WHY: today, still empty: the current streak continues
+    counts[-1] = 0
     page = "".join(cell((start + dt.timedelta(days=i)).isoformat(), n, 1 if n else 0)
                    for i, n in enumerate(counts))
     total = sum(counts)
