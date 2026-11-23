@@ -44,11 +44,11 @@ OUT = ROOT / "profile"
 USER = "davisbuilds"
 CALENDAR_URL = f"https://github.com/users/{USER}/contributions"
 API = "https://api.github.com"
-# Markup and build files say little about what the code is written in.
+# WHY: markup and build files say little about what the code is written in.
 IGNORED_LANGUAGES = {"HTML", "CSS", "Shell", "Dockerfile", "Makefile"}
 WIDTH = 840
 
-# Tokens from davisbuilds.net src/styles/tokens.css.
+# WHY: copied from davisbuilds.net src/styles/tokens.css so the profile matches the site.
 THEMES = {
     "light": {
         "paper": "#e9ece8", "sheet": "#f4f5f2", "ink": "#16212b", "muted": "#5a6772",
@@ -62,18 +62,12 @@ THEMES = {
     },
 }
 
-# Font instances: (family name in the SVG, source file, axis location).
 FACES = {
     "display": ("Archivo Display", "archivo.woff2", {"wght": 820, "wdth": 112}),
     "sub": ("Archivo Sub", "archivo.woff2", {"wght": 760, "wdth": 108}),
     "mono": ("JetBrains Mono", "jetbrains-mono.woff2", {"wght": 450}),
     "mono-bold": ("JetBrains Mono Bold", "jetbrains-mono.woff2", {"wght": 700}),
 }
-
-
-# --------------------------------------------------------------------------
-# Data
-# --------------------------------------------------------------------------
 
 
 @dataclass
@@ -148,7 +142,7 @@ def longest_streak(days: list[Day]) -> Streak:
 
 
 def current_streak(days: list[Day]) -> Streak:
-    # Today may simply not have contributions yet, so it doesn't break a streak.
+    # WHY: today may simply not have contributions yet, so it doesn't break a streak.
     tail = days[:-1] if days and days[-1].count == 0 else days
     run = 0
     for day in reversed(tail):
@@ -189,11 +183,6 @@ def read_repos(token: str | None) -> Repos:
         followers=user["followers"],
         languages=top,
     )
-
-
-# --------------------------------------------------------------------------
-# Fonts
-# --------------------------------------------------------------------------
 
 
 def font_face(face: str, text: str) -> str:
@@ -261,12 +250,7 @@ class Svg:
         )
 
 
-# --------------------------------------------------------------------------
-# Images
-# --------------------------------------------------------------------------
-
-# The pixel crew, from davisbuilds.net src/scripts/intro.ts. (x, y) is where the
-# sprite's feet meet the ground, at its horizontal center.
+# WHY: the pixel crew is copied from davisbuilds.net src/scripts/intro.ts.
 WORKER = ["O......O", "O.OOOO.O", ".OHOOOO.", ".OEOOEO.", ".OOOOOO.", "..DDDD..", "..DDDD.."]
 LEGS = ["..D..D..", ".D....D."]
 FOREMAN = ["..KKKK..", ".KKKKKK.", "KKKKKKKK", ".OOOOOO.", ".OEOOEO.", ".OOOOOO.", "..OOOO..", ".ODDDDO.", "..DDDD..", "..D..D.."]
@@ -274,6 +258,7 @@ GEAR = "M16.4 4.41L17.11 1.73A18.5 18.5 0 0 1 22.89 1.73L23.6 4.41A16 16 0 0 1 2
 
 
 def sprite(t: dict[str, str], rows: list[str], x: float, y: float, p: int) -> str:
+    # WHY: anchoring at the feet keeps each sprite on the ground as its pose changes.
     colors = {"O": t["agent"], "D": t["agent_dark"], "H": t["agent_hi"], "K": t["agent_hi"], "E": t["ink"]}
     ox, oy = round(x - 4 * p), round(y - len(rows) * p)
     paths: dict[str, str] = {}
@@ -312,8 +297,6 @@ def tick(t: dict[str, str], x: float, y: float, css: str = "") -> str:
             'stroke-linecap="round" stroke-linejoin="round"/>')
 
 
-# Every 8 s the gear turns one tooth (the turn lands where it started) and the
-# foreman nods and signs off.
 SIGN_OFF_MOTION = """@media (prefers-reduced-motion:no-preference){
 .gear{transform-origin:20px 20px;animation:gear 8s ease-in-out infinite}
 .nod{animation:nod 8s linear infinite}
@@ -323,8 +306,8 @@ SIGN_OFF_MOTION = """@media (prefers-reduced-motion:no-preference){
 @keyframes check{0%,88%,96%,100%{transform:none}92%{transform:translateY(-5px)}}
 }"""
 
-# The crew files out along the bottom rule and past the sheet's edge, then the
-# next crew comes along. The still is them part way, one leg frame showing.
+# WHY: without motion only one leg frame shows, so the still reads as the crew
+# part way along the bottom rule.
 LANE_MOTION = """.step-b{opacity:0}
 @media (prefers-reduced-motion:no-preference){
 .lane{animation:lane 11s linear infinite}
@@ -343,7 +326,6 @@ def gear_stamp(svg: "Svg", x: float, y: float, size: float) -> None:
                     ' letter-spacing="-0.02em"'))
 
 
-
 def masthead(theme: dict[str, str]) -> str:
     t = theme
     svg = Svg(244, t, "Hi, I'm Davis. Systems engineer obsessed with building.")
@@ -356,7 +338,6 @@ def masthead(theme: dict[str, str]) -> str:
                               (".", None)], "sub", 23, t["ink"], extra=' letter-spacing="-0.01em"'))
     svg.css = SIGN_OFF_MOTION
     gear_stamp(svg, 762, 50, 58)
-    # Two of the crew carry a finished panel in; the foreman signs it off.
     px, pw = 584, 104
     svg.add(f'<g shape-rendering="crispEdges"><rect x="{px + .5}" y="130.5" width="{pw}" height="24" fill="{t["sheet"]}" stroke="{t["ink"]}"/>'
             f'<rect x="{px + 8}" y="137" width="52" height="3" fill="{t["ink"]}"/><rect x="{px + 8}" y="144" width="78" height="3" fill="{t["rule"]}"/></g>')
@@ -406,7 +387,6 @@ def readout(theme: dict[str, str], cal: Calendar, repos: Repos, read: dt.date) -
     svg.label(20, 22, "Readout · GitHub")
     svg.label(WIDTH - 20, 22, f"Read {read.isoformat()}", anchor="end")
 
-    # Tiles
     tiles = [
         ("Contributions · last year", f"{cal.total:,}", "as shown on this profile", t["ink"]),
         ("Longest streak", f"{longest.length} days", fmt_range(longest), t["ink"]),
@@ -425,11 +405,10 @@ def readout(theme: dict[str, str], cal: Calendar, repos: Repos, read: dt.date) -
         svg.label(x + 14, 116, note, size=10.5, upper=False)
     svg.add(f'<line x1="0" y1="128.5" x2="{WIDTH}" y2="128.5" stroke="{t["ink"]}"/>')
 
-    # Calendar, GitHub's own levels and week layout
     svg.label(20, 154, "Contributions · trailing year · GitHub's shading")
     pitch, cell, x0, y0 = 14, 11, 48, 182
     first = cal.days[0].date
-    start = first - dt.timedelta(days=(first.weekday() + 1) % 7)  # weeks start on Sunday
+    start = first - dt.timedelta(days=(first.weekday() + 1) % 7)  # WHY: GitHub's weeks start on Sunday
     fills = ["", "0.3", "0.52", "0.76", "1"]
     month_seen = set()
     for day in cal.days:
@@ -460,7 +439,6 @@ def readout(theme: dict[str, str], cal: Calendar, repos: Repos, read: dt.date) -
                     f'fill-opacity="0.45"/>')
     svg.label(legend_x + 5 * pitch + 4, 300, "More", size=9.5, upper=False)
 
-    # Languages
     top = 318
     svg.add(f'<line x1="20" y1="{top + 0.5}" x2="{WIDTH - 20}" y2="{top + 0.5}" stroke="{t["rule"]}" '
             f'stroke-dasharray="3 3"/>')
@@ -487,8 +465,6 @@ def readout(theme: dict[str, str], cal: Calendar, repos: Repos, read: dt.date) -
         svg.add(f'<rect x="{cx}" y="{cy - 8}" width="8" height="8" fill="{color}" fill-opacity="{opacity}"/>')
         svg.add(svg.txt(cx + 14, cy, f"{name} {share * 100:.1f}%", "mono", 11, t["ink"]))
 
-    # The crew. Each one stands somewhere the data puts it: beside the best day,
-    # delivering today's cell, and filing out along the bottom rule.
     svg.add(worker(t, 806, 128, 0))
     svg.add(tick(t, 808, 92))
     today = cal.days[-1].date
@@ -501,7 +477,6 @@ def readout(theme: dict[str, str], cal: Calendar, repos: Repos, read: dt.date) -
     crew = "".join(walker(t, wx, height - 35, i) for i, wx in enumerate((726, 758, 790)))
     svg.add(f'<g class="lane">{crew}</g>')
 
-    # Provenance
     svg.add(f'<line x1="0" y1="{height - 34.5}" x2="{WIDTH}" y2="{height - 34.5}" stroke="{t["ink"]}"/>')
     svg.add(svg.txt(20, height - 13, [
         ("SRC ", t["ink"]), ("GitHub contribution calendar + REST API · ", None),
@@ -509,11 +484,6 @@ def readout(theme: dict[str, str], cal: Calendar, repos: Repos, read: dt.date) -
         ("SCOPE ", t["ink"]), ("all contributions GitHub counts; languages from public repos", None),
     ], "mono", 10, t["muted"]))
     return svg.render()
-
-
-# --------------------------------------------------------------------------
-# Controls and entry point
-# --------------------------------------------------------------------------
 
 
 def verify_detectors() -> None:
@@ -524,9 +494,9 @@ def verify_detectors() -> None:
                 f'<tool-tip for="c-{date}">{tip} on that day.</tool-tip>')
     start = dt.date(2025, 1, 1)
     counts = [1] * 365
-    counts[10] = 0  # breaks the first run after 10 days
+    counts[10] = 0
     counts[200] = 0
-    counts[-1] = 0  # today, still empty: the current streak continues
+    counts[-1] = 0
     page = "".join(cell((start + dt.timedelta(days=i)).isoformat(), n, 1 if n else 0)
                    for i, n in enumerate(counts))
     total = sum(counts)
