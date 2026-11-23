@@ -84,8 +84,25 @@ REGEX_WORDS = {
     "throw",
     "yield",
 }
-JS_EXPRESSION_TOKEN = re.compile(r"=>|\.\.\.|\+\+|--|[$\w]+|\S")
-JS_EXPRESSION_REGEX_WORDS = REGEX_WORDS - {"of"} | {"instanceof", "new"}
+# WHY: JavaScript's punctuators are ASCII. Keep Unicode identifier parts together
+# without requiring the runtime's Unicode tables to match a JavaScript engine.
+JS_IDENTIFIER = re.compile(
+    r"#?(?:[A-Za-z0-9_$]|[^\x00-\x7f\s\ufeff]|\\u(?:[0-9A-Fa-f]{4}|\{[0-9A-Fa-f]+\}))+"
+)
+JS_EXPRESSION_TOKEN = re.compile(
+    r"=>|\.\.\.|\+\+|--|\?\?=?|\?\.(?![0-9])|" + JS_IDENTIFIER.pattern + r"|[^\s\ufeff]"
+)
+JS_EXPRESSION_REGEX_WORDS = REGEX_WORDS - {"of", "yield"} | {"instanceof", "new"}
+JS_ARROW_PARAMETER_PREFIXES = {"", "async", "?", ":", "=>", "=", "(", "[", ",", "return"}
+JS_MEMBER_ACCESS = {".", "?."}
+JS_LINE_BREAK = re.compile(r"[\n\r\u2028\u2029]")
+JS_TRIVIA = re.compile(r"(?:[\s\ufeff]+|//[^\r\n\u2028\u2029]*|/\*[\s\S]*?\*/)*")
+JS_INFIX_WORDS = {"in", "instanceof", "as", "satisfies", "of"}
+JS_PREFIX_WORDS = (
+    JS_EXPRESSION_REGEX_WORDS | JS_INFIX_WORDS | {"await", "class", "function", "extends"}
+)
+JS_OBJECT_PREFIXES = REGEX_PREV - {"{", "}", ":", ";"} | {"return", "throw", "...", "??", "??="}
+JS_YIELD_IDENTIFIER, JS_YIELD_GENERATOR, JS_YIELD_RESERVED = range(3)
 C_FAMILY = {
     ".js",
     ".jsx",
@@ -153,6 +170,11 @@ GO_DECL_SCOPE = re.compile(
 )
 GO_DELIMITER = re.compile(r"[()\[\]{}]")
 GO_CLOSE = {"(": ")", "[": "]", "{": "}"}
+GO_SEMICOLON_END = re.compile(r"(?:\w+|[)\]};]|\+\+|--|(?<![\w.])[0-9][0-9_]*\.)$")
+GO_CONTINUATION_KEYWORDS = {
+    "case", "chan", "const", "default", "defer", "else", "for", "func", "go", "goto", "if",
+    "import", "interface", "map", "package", "range", "select", "struct", "switch", "type", "var",
+}
 GO_DECL = re.compile(r"(func|type|var|const|package)\b|import\s+\"C\"")
 HEREDOC = re.compile(r'<<-?\s*([\'"]?)([A-Za-z_][A-Za-z0-9_]*)\1')
 
@@ -465,7 +487,176 @@ def skip_quoted(text: str, i: int) -> int:
     return n
 
 
-def skip_template(text: str, i: int, found: list[tuple[int, int]]) -> int:
+def js_ends_operand(token: str, previous: str) -> bool:
+    return token in (")", "]", "}", "<operand>") or (
+        (previous in JS_MEMBER_ACCESS or token not in JS_PREFIX_WORDS)
+        and bool(JS_IDENTIFIER.fullmatch(token))
+    )
+
+
+class JSFunctionScopes:
+    def __init__(
+        self, text: str, mode: int = JS_YIELD_IDENTIFIER, *, expression: bool = False
+    ) -> None:
+        self.text = text
+        self.frames: list[tuple[str, int, bool | None, bool]] = [("", mode, None, False)]
+        self.arrows: dict[int, set[int]] = {}
+        self.conditional_depth: dict[int, int] = {}
+        self.typed_parameters: set[int] = set()
+        self.closed_arrow_parameters = False
+        self.signatures: dict[int, bool] = {}
+        self.class_headers: set[int] = set()
+        self.object_members: dict[int, bool] = {}
+        self.object_value = False
+        self.body: bool | None = None
+        self.annotated_body: tuple[int, bool] | None = None
+        self.type_angles = 0
+        self.previous = "=" if expression else ""
+        self.before_previous = ""
+        self.line_break = False
+
+    @property
+    def yield_mode(self) -> int:
+        mode = self.frames[-1][1]
+        if mode == JS_YIELD_GENERATOR and self.arrows.get(len(self.frames)):
+            return JS_YIELD_IDENTIFIER
+        return mode
+
+    def token(self, token: str, end: int = 0) -> None:
+        before_previous, self.before_previous = self.before_previous, self.previous
+        previous, self.previous = self.previous, token
+        body, self.body = self.body, None
+        object_value, self.object_value = self.object_value, False
+        closed_arrow_parameters = self.closed_arrow_parameters
+        self.closed_arrow_parameters = False
+        line_break, self.line_break = self.line_break, False
+        depth = len(self.frames)
+        if (
+            line_break and not self.type_angles and self.arrows.get(depth)
+            and token not in JS_INFIX_WORDS and JS_IDENTIFIER.fullmatch(token)
+            and js_ends_operand(previous, before_previous)
+        ):
+            self.arrows.pop(depth, None)
+            self.conditional_depth.pop(depth, None)
+        branches = self.conditional_depth.get(depth, 0)
+        member = self.object_members.get(depth, False)
+        if member and previous == "*" and JS_IDENTIFIER.fullmatch(token):
+            return
+        if token == "function" and previous not in JS_MEMBER_ACCESS:
+            self.signatures[depth] = False
+        elif token == "class" and previous not in JS_MEMBER_ACCESS:
+            next_token = JS_EXPRESSION_TOKEN.match(self.text, JS_TRIVIA.match(self.text, end).end())
+            if next_token and (
+                next_token[0] in ("{", "<") or JS_IDENTIFIER.fullmatch(next_token[0])
+            ):
+                self.class_headers.add(depth)
+        elif token == "default" and previous == "export" and (
+            before_previous not in JS_MEMBER_ACCESS
+        ):
+            self.object_value = True
+        elif token == "*" and (
+            member or (previous == "function" and depth in self.signatures)
+        ):
+            self.signatures[depth] = True
+        elif token == "(":
+            signature = self.signatures.pop(depth, None) if not self.type_angles else None
+            self.frames.append(
+                (
+                    ")", self.yield_mode, False if member and signature is None else signature,
+                    previous in JS_ARROW_PARAMETER_PREFIXES,
+                )
+            )
+            if member:
+                self.object_members[depth] = False
+        elif token == "[":
+            self.frames.append(("]", self.yield_mode, None, False))
+        elif token == "?":
+            self.conditional_depth[depth] = branches + 1
+        elif token == ":":
+            if previous == "class":
+                self.class_headers.discard(depth)
+            if closed_arrow_parameters and self.annotated_body is None:
+                self.annotated_body = depth, False
+            elif branches:
+                self.conditional_depth[depth] = branches - 1
+                self.arrows.get(depth, set()).discard(branches)
+                self.object_value = True
+            elif body is not None and self.annotated_body is None:
+                self.annotated_body = depth, body
+            elif self.frames[-1][3]:
+                self.typed_parameters.add(depth)
+            if member:
+                self.object_value = True
+                self.object_members[depth] = False
+                self.signatures.pop(depth, None)
+        elif token == "<" and (
+            self.annotated_body is not None
+            or depth in self.signatures
+            or depth in self.class_headers
+            or member
+        ):
+            self.type_angles += 1
+        elif token == ">" and self.type_angles:
+            self.type_angles -= 1
+        elif token == "{":
+            if previous == "=>":
+                self.arrows.get(depth, set()).discard(branches)
+            if (
+                not self.type_angles
+                and self.annotated_body is not None
+                and self.annotated_body[0] == depth
+                and previous not in (":", "&", "|", "?", "=>")
+            ):
+                _, body = self.annotated_body
+                self.annotated_body = None
+            mode = self.yield_mode
+            if not self.type_angles:
+                self.signatures.pop(depth, None)
+                if depth in self.class_headers:
+                    self.class_headers.discard(depth)
+                    # WHY: Class bodies are strict, including nested callables.
+                    # Bare yield in valid code here can only be the generator keyword.
+                    mode = JS_YIELD_RESERVED
+                elif body is not None and mode != JS_YIELD_RESERVED:
+                    mode = JS_YIELD_GENERATOR if body else JS_YIELD_IDENTIFIER
+                elif previous in JS_OBJECT_PREFIXES or object_value:
+                    self.object_members[depth + 1] = True
+            self.frames.append(("}", mode, None, False))
+        elif token == self.frames[-1][0] and depth > 1:
+            self.arrows.pop(depth, None)
+            self.conditional_depth.pop(depth, None)
+            self.signatures.pop(depth, None)
+            self.class_headers.discard(depth)
+            self.object_members.pop(depth, None)
+            _, _, self.body, possible_parameters = self.frames.pop()
+            self.closed_arrow_parameters = (
+                possible_parameters and (previous == "(" or depth in self.typed_parameters)
+            )
+            self.typed_parameters.discard(depth)
+        elif token == "=>":
+            self.arrows.setdefault(depth, set()).add(branches)
+            self.body = False
+            if self.annotated_body and self.annotated_body[0] == depth:
+                self.annotated_body = None
+        elif token == "=" and not self.type_angles:
+            self.signatures.pop(depth, None)
+        elif token in (";", ",") or (
+            previous not in JS_MEMBER_ACCESS and token in ("return", "throw", "const", "var")
+        ):
+            if not self.type_angles:
+                self.arrows.pop(depth, None)
+                self.conditional_depth.pop(depth, None)
+                self.signatures.pop(depth, None)
+                self.class_headers.discard(depth)
+                if token == "," and depth in self.object_members:
+                    self.object_members[depth] = True
+            if token == ";" and self.annotated_body and self.annotated_body[0] == depth:
+                self.annotated_body = None
+
+
+def skip_template(
+    text: str, i: int, found: list[tuple[int, int]], *, mode: int | None = None
+) -> int:
     j, n = i + 1, len(text)
     while j < n:
         c = text[j]
@@ -474,25 +665,25 @@ def skip_template(text: str, i: int, found: list[tuple[int, int]]) -> int:
         elif c == "`":
             return j + 1
         elif text.startswith("${", j):
-            j = skip_expression(text, j + 2, found, regex=True)
+            j = skip_expression(text, j + 2, found, regex=True, mode=mode)
         else:
             j += 1
     return n
 
 
-def skip_expression(text: str, j: int, found: list[tuple[int, int]], *, regex: bool = False) -> int:
+def skip_expression(
+    text: str, j: int, found: list[tuple[int, int]], *,
+    regex: bool = False, mode: int | None = None,
+) -> int:
     depth, n = 0, len(text)
     expects_operand = True
     previous = ""
+    context = JSFunctionScopes(text, mode, expression=True) if mode is not None else None
     while j < n:
         c = text[j]
-        if c in "\"'":
-            j = skip_quoted(text, j)
-            expects_operand, previous = False, ""
-        elif c == "`":
-            j = skip_template(text, j, found)
-            expects_operand, previous = False, ""
-        elif text.startswith("//", j):
+        if context and c in "\n\r\u2028\u2029":
+            context.line_break = True
+        if text.startswith("//", j):
             end = text.find("\n", j)
             end = n if end == -1 else end
             found.append((j, end))
@@ -501,26 +692,51 @@ def skip_expression(text: str, j: int, found: list[tuple[int, int]], *, regex: b
             end = text.find("*/", j + 2)
             end = n if end == -1 else end + 2
             found.append((j, end))
+            if context:
+                context.line_break |= bool(JS_LINE_BREAK.search(text, j, end))
             j = end
-        elif regex and c == "/" and expects_operand:
-            j = skip_regex(text, j)
+        elif c in "\"'`" or (regex and c == "/" and expects_operand):
+            if c == "`":
+                j = skip_template(text, j, found, mode=context.yield_mode if context else None)
+            elif c == "/":
+                j = skip_regex(text, j)
+            else:
+                j = skip_quoted(text, j)
             expects_operand, previous = False, ""
+            if context:
+                context.token("<operand>")
         elif c == "{":
             depth += 1
             j += 1
             expects_operand, previous = True, ""
+            if context:
+                context.token(c)
         elif c == "}":
             if depth == 0:
                 return j + 1
             depth -= 1
             j += 1
             expects_operand, previous = False, ""
+            if context:
+                context.token(c)
         elif regex and (match := JS_EXPRESSION_TOKEN.match(text, j)):
             token = match[0]
             if token not in ("!", "++", "--"):
-                expects_operand = token in REGEX_PREV or token in ("/", "...", "=>") or (
-                    previous != "." and token in JS_EXPRESSION_REGEX_WORDS
+                expects_operand = (
+                    token in REGEX_PREV or token in ("/", "...", "=>", "??", "??=")
+                    or (
+                        previous not in JS_MEMBER_ACCESS
+                        and (
+                            token in JS_EXPRESSION_REGEX_WORDS
+                            or (
+                                token == "yield" and context
+                                and context.yield_mode != JS_YIELD_IDENTIFIER
+                            )
+                        )
+                    )
                 )
+            if context:
+                context.token(token, match.end())
             previous = token
             j = match.end()
         else:
@@ -571,8 +787,11 @@ def c_comments(
 ) -> Iterator[Raw]:
     i, row, n = 0, 1, len(text)
     line_start = 0
+    context = JSFunctionScopes(text) if regex and "yield" in text and "`" in text else None
     while i < n:
         ch = text[i]
+        if context and ch in "\n\r\u2028\u2029":
+            context.line_break = True
         if ch == "\n":
             row += 1
             line_start = i + 1
@@ -638,6 +857,8 @@ def c_comments(
             end = text.find("*/", i + 2)
             end = n if end == -1 else end + 2
             raw = text[i:end]
+            if context:
+                context.line_break |= bool(JS_LINE_BREAK.search(raw))
             start_row = row
             full = text[line_start:i].strip() == ""
             row += raw.count("\n")
@@ -676,11 +897,15 @@ def c_comments(
         if ch in "\"'`" or (regex and ch == "/" and starts_regex(text, i)):
             nested: list[tuple[int, int]] = []
             if ch == "`":
-                j = skip_template(text, i, nested)
+                j = skip_template(
+                    text, i, nested, mode=context.yield_mode if context else None
+                )
             elif ch == "/":
                 j = skip_regex(text, i)
             else:
                 j = skip_quoted(text, i)
+            if context:
+                context.token("<operand>")
             for start, end in nested:
                 start_row = text.count("\n", 0, start) + 1
                 raw = text[start:end]
@@ -690,6 +915,10 @@ def c_comments(
                 row += newlines
                 line_start = text.rfind("\n", i, j) + 1
             i = j
+            continue
+        if context and (match := JS_EXPRESSION_TOKEN.match(text, i)):
+            context.token(match[0], match.end())
+            i = match.end()
             continue
         i += 1
 
@@ -705,15 +934,19 @@ def go_names_doc(comment: str, code: str) -> bool:
 
 
 def go_decl_regions(text: str) -> tuple[set[int], set[int]]:
-    code = GO_NON_CODE.sub(lambda match: " " + "\n" * match[0].count("\n") + " ", text)
+    code = GO_NON_CODE.sub(
+        lambda match: " " + "\n" * match[0].count("\n") + ("_ " if match[0][0] in "\"'`" else " "),
+        text,
+    )
     declarations = {match.end() - 1 for match in GO_DECL_SCOPE.finditer(code)}
     scopes: list[tuple[str, bool]] = []
-    before: set[int] = set()
-    after: set[int] = set()
+    member_starts: set[int] = set()
+    member_ends: set[int] = set()
     offset = 0
+    can_start_member = True
     for index, line in enumerate(code.split("\n")):
-        if scopes and scopes[-1][1]:
-            before.add(index)
+        if scopes and scopes[-1][1] and can_start_member:
+            member_starts.add(index)
         for match in GO_DELIMITER.finditer(line):
             token = match[0]
             if token in GO_CLOSE:
@@ -723,21 +956,41 @@ def go_decl_regions(text: str) -> tuple[set[int], set[int]]:
                 scopes.append((GO_CLOSE[token], declaration))
             elif scopes and scopes[-1][0] == token:
                 scopes.pop()
-        if scopes and scopes[-1][1]:
-            after.add(index)
+        if code_end := line.rstrip():
+            terminal = GO_SEMICOLON_END.search(code_end)
+            terminates = terminal is not None and terminal[0] not in GO_CONTINUATION_KEYWORDS
+            can_start_member = code_end.endswith(("(", "{")) or terminates
+            if terminates and scopes and scopes[-1][1]:
+                member_ends.add(index)
         offset += len(line) + 1
-    return before, after
+    return member_starts, member_ends
 
 
-def go_doc_rows(text: str, comments: list[Raw]) -> set[int]:
+def go_names_trailing_doc(raw: str, line: str) -> bool:
+    raw = raw.strip()
+    offset = line.find(raw)
+    if offset < 0 or not go_names_doc(raw, line[:offset]):
+        return False
+    tail = GO_NON_CODE.sub(
+        lambda match: "" if match[0].startswith(("//", "/*")) else "_",
+        line[offset + len(raw):],
+    )
+    return not tail.strip()
+
+
+def go_doc_indices(text: str, comments: list[Raw]) -> set[int]:
     lines = text.split("\n")
-    before, after = go_decl_regions(text)
+    member_starts, member_ends = go_decl_regions(text)
     doc = set()
-    for start, end, raw, full, _doc in comments:
+    for index, (start, end, raw, full, _doc) in enumerate(comments):
         if not full:
-            code = lines[start - 1][: max(0, lines[start - 1].find(raw.strip()))]
-            if start - 1 in before and start - 1 in after and go_names_doc(raw, code):
-                doc.add(start)
+            row = start - 1
+            if (
+                row in member_starts
+                and row in member_ends
+                and go_names_trailing_doc(raw, lines[row])
+            ):
+                doc.add(index)
             continue
         nxt = end
         while nxt < len(lines) and lines[nxt].lstrip().startswith("//"):
@@ -747,9 +1000,9 @@ def go_doc_rows(text: str, comments: list[Raw]) -> set[int]:
         first = start - 1
         while first > 0 and lines[first - 1].lstrip().startswith("//"):
             first -= 1
-        named = nxt in before and go_names_doc(lines[first].strip(), lines[nxt])
+        named = nxt in member_starts and go_names_doc(lines[first].strip(), lines[nxt])
         if GO_DECL.match(lines[nxt]) or named:
-            doc.add(start)
+            doc.add(index)
     return doc
 
 
@@ -789,8 +1042,10 @@ def raw_comments(path: str, text: str) -> list[Raw]:
             )
         )
         if lang == "go":
-            doc = go_doc_rows(text, found)
-            found = [(*c[:4], c[4] or c[0] in doc) for c in found]
+            doc = go_doc_indices(text, found)
+            found = [
+                (*comment[:4], comment[4] or index in doc) for index, comment in enumerate(found)
+            ]
         return found
     return []
 
