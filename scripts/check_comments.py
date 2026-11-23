@@ -22,7 +22,9 @@ Usage:
                                  appears only when it carries an excuse marker
 
 The baseline's ``exclude`` list holds extra glob patterns (``**`` spans
-directories) for files whose comments are data, such as test fixtures.
+directories) for files whose comments are data, such as test fixtures. Its
+optional ``directives`` list holds regular expressions for repo-specific magic
+comments; a comment whose text matches one is allowed as a directive.
 """
 
 # WHY: repos vendor this file byte-for-byte but format at different line lengths,
@@ -82,6 +84,8 @@ REGEX_WORDS = {
     "throw",
     "yield",
 }
+JS_EXPRESSION_TOKEN = re.compile(r"=>|\.\.\.|\+\+|--|[$\w]+|\S")
+JS_EXPRESSION_REGEX_WORDS = REGEX_WORDS - {"of"} | {"instanceof", "new"}
 C_FAMILY = {
     ".js",
     ".jsx",
@@ -121,7 +125,7 @@ DIRECTIVE = re.compile(
     r"|@vitest-environment|@jest-environment|[#@]\s*sourceMappingURL|@license|@preserve"
     r"|swiftlint:|swift-format-ignore|MARK:|#?region\b|#?endregion\b|nolint|go:\w|\+build"
     r"|shellcheck\s|yamllint|zizmor:|renovate:|hadolint|syntax=|escape=|check=|yaml-language-server"
-    r"|SPDX-|Copyright|\(c\)|-\*-|vim:|\+goose|migrate:|<reference\s"
+    r"|SPDX-|Copyright|\(c\)\s*\d{4}|-\*-|vim:|\+goose|migrate:|<reference\s"
     r"|\[if\s|<!\[endif\]"
     r"|(todo)?ruleid:|(todo)?ok:|nosemgrep|AUTO-GENERATED|DO NOT EDIT|Code generated)",
     re.IGNORECASE,
@@ -137,6 +141,18 @@ YAML_BLOCK = re.compile(r"^(\s*)(?:-\s+)?(?:([\w.-]+)\s*:\s*)?[|>][-+0-9]*\s*(#.
 YAML_SCRIPT_KEYS = {"run", "script", "before_script", "after_script", "command"}
 PEP263 = re.compile(r"#.*?coding[:=][ \t]*[-_.a-zA-Z0-9]+")
 EMBEDDED = re.compile(r"<(script|style)\b[^>]*>", re.IGNORECASE)
+GO_NAME = re.compile(
+    r"^\s*(?:(?:func|type|var|const)\s+)?(?:\([^)]*\)\s*)?([A-Za-z_]\w*)"
+)
+GO_NON_CODE = re.compile(
+    r"//[^\n]*|/\*[\s\S]*?(?:\*/|\Z)|`[^`]*(?:`|\Z)"
+    r"""|"(?:[^"\\\n]|\\[^\n])*"|'(?:[^'\\\n]|\\[^\n])*'"""
+)
+GO_DECL_SCOPE = re.compile(
+    r"\b(?:struct|interface)\s*\{|^[ \t]*(?:const|var|type)\s*\(", re.MULTILINE
+)
+GO_DELIMITER = re.compile(r"[()\[\]{}]")
+GO_CLOSE = {"(": ")", "[": "]", "{": "}"}
 GO_DECL = re.compile(r"(func|type|var|const|package)\b|import\s+\"C\"")
 HEREDOC = re.compile(r'<<-?\s*([\'"]?)([A-Za-z_][A-Za-z0-9_]*)\1')
 
@@ -458,20 +474,24 @@ def skip_template(text: str, i: int, found: list[tuple[int, int]]) -> int:
         elif c == "`":
             return j + 1
         elif text.startswith("${", j):
-            j = skip_expression(text, j + 2, found)
+            j = skip_expression(text, j + 2, found, regex=True)
         else:
             j += 1
     return n
 
 
-def skip_expression(text: str, j: int, found: list[tuple[int, int]]) -> int:
+def skip_expression(text: str, j: int, found: list[tuple[int, int]], *, regex: bool = False) -> int:
     depth, n = 0, len(text)
+    expects_operand = True
+    previous = ""
     while j < n:
         c = text[j]
         if c in "\"'":
             j = skip_quoted(text, j)
+            expects_operand, previous = False, ""
         elif c == "`":
             j = skip_template(text, j, found)
+            expects_operand, previous = False, ""
         elif text.startswith("//", j):
             end = text.find("\n", j)
             end = n if end == -1 else end
@@ -482,14 +502,27 @@ def skip_expression(text: str, j: int, found: list[tuple[int, int]]) -> int:
             end = n if end == -1 else end + 2
             found.append((j, end))
             j = end
+        elif regex and c == "/" and expects_operand:
+            j = skip_regex(text, j)
+            expects_operand, previous = False, ""
         elif c == "{":
             depth += 1
             j += 1
+            expects_operand, previous = True, ""
         elif c == "}":
             if depth == 0:
                 return j + 1
             depth -= 1
             j += 1
+            expects_operand, previous = False, ""
+        elif regex and (match := JS_EXPRESSION_TOKEN.match(text, j)):
+            token = match[0]
+            if token not in ("!", "++", "--"):
+                expects_operand = token in REGEX_PREV or token in ("/", "...", "=>") or (
+                    previous != "." and token in JS_EXPRESSION_REGEX_WORDS
+                )
+            previous = token
+            j = match.end()
         else:
             j += 1
     return n
@@ -661,16 +694,61 @@ def c_comments(
         i += 1
 
 
+def go_names_doc(comment: str, code: str) -> bool:
+    name = GO_NAME.match(code)
+    words = re.findall(r"[A-Za-z_]\w*", comment.lstrip("/ \t"))[:2]
+    if not name or not words:
+        return False
+    if words[0] in ("A", "An", "The") and len(words) > 1:
+        return bool(name.group(1) in words[:2])
+    return bool(words[0] == name.group(1))
+
+
+def go_decl_regions(text: str) -> tuple[set[int], set[int]]:
+    code = GO_NON_CODE.sub(lambda match: " " + "\n" * match[0].count("\n") + " ", text)
+    declarations = {match.end() - 1 for match in GO_DECL_SCOPE.finditer(code)}
+    scopes: list[tuple[str, bool]] = []
+    before: set[int] = set()
+    after: set[int] = set()
+    offset = 0
+    for index, line in enumerate(code.split("\n")):
+        if scopes and scopes[-1][1]:
+            before.add(index)
+        for match in GO_DELIMITER.finditer(line):
+            token = match[0]
+            if token in GO_CLOSE:
+                declaration = (
+                    offset + match.start() in declarations and (token == "{" or not scopes)
+                )
+                scopes.append((GO_CLOSE[token], declaration))
+            elif scopes and scopes[-1][0] == token:
+                scopes.pop()
+        if scopes and scopes[-1][1]:
+            after.add(index)
+        offset += len(line) + 1
+    return before, after
+
+
 def go_doc_rows(text: str, comments: list[Raw]) -> set[int]:
     lines = text.split("\n")
+    before, after = go_decl_regions(text)
     doc = set()
-    for start, end, _raw, full, _doc in comments:
+    for start, end, raw, full, _doc in comments:
         if not full:
+            code = lines[start - 1][: max(0, lines[start - 1].find(raw.strip()))]
+            if start - 1 in before and start - 1 in after and go_names_doc(raw, code):
+                doc.add(start)
             continue
         nxt = end
         while nxt < len(lines) and lines[nxt].lstrip().startswith("//"):
             nxt += 1
-        if nxt < len(lines) and GO_DECL.match(lines[nxt]):
+        if nxt >= len(lines):
+            continue
+        first = start - 1
+        while first > 0 and lines[first - 1].lstrip().startswith("//"):
+            first -= 1
+        named = nxt in before and go_names_doc(lines[first].strip(), lines[nxt])
+        if GO_DECL.match(lines[nxt]) or named:
             doc.add(start)
     return doc
 
@@ -717,10 +795,14 @@ def raw_comments(path: str, text: str) -> list[Raw]:
     return []
 
 
-def blocks(path: str, text: str) -> list[Block]:
+def blocks(
+    path: str, text: str, extra: Sequence[re.Pattern[str]] = ()
+) -> list[Block]:
     out: list[Block] = []
     for start, end, raw, full, doc in raw_comments(path, text):
-        directive = not doc and is_directive(raw)
+        directive = not doc and (
+            is_directive(raw) or any(p.search(comment_body(raw)) for p in extra)
+        )
         prev = out[-1] if out else None
         if doc:
             if prev and prev["kind"] == "doc" and start == prev["end"] + 1:
@@ -796,6 +878,7 @@ def write_baseline(root: Path, data: dict[str, Any]) -> None:
     data = {
         "version": 1,
         "exclude": sorted(data.get("exclude", [])),
+        **({"directives": data["directives"]} if data.get("directives") else {}),
         "files": dict(sorted((k, v) for k, v in data["files"].items() if v > 0)),
     }
     (root / BASELINE).write_text(json.dumps(data, indent=2) + "\n")
@@ -813,7 +896,10 @@ def tracked_files(root: Path, excludes: Sequence[str]) -> list[str]:
     return sorted(files)
 
 
-def scan(root: Path, excludes: Sequence[str]) -> dict[str, list[Block]]:
+def scan(
+    root: Path, excludes: Sequence[str], directives: Sequence[str] = ()
+) -> dict[str, list[Block]]:
+    extra = [re.compile(pattern) for pattern in directives]
     found = {}
     for path in tracked_files(root, excludes):
         full = root / path
@@ -825,7 +911,7 @@ def scan(root: Path, excludes: Sequence[str]) -> dict[str, list[Block]]:
         text = data.decode("utf-8", "replace")
         if language(path, text) is None:
             continue
-        file_blocks = blocks(path, text)
+        file_blocks = blocks(path, text, extra)
         if file_blocks:
             found[path] = file_blocks
     return found
@@ -854,7 +940,7 @@ def main(argv: list[str]) -> int:
         return 2
     root = repo_root()
     baseline = read_baseline(root)
-    found = scan(root, baseline["exclude"])
+    found = scan(root, baseline["exclude"], baseline.get("directives", []))
 
     if mode == "--list":
         prefixes = argv[1:]
