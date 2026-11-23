@@ -84,6 +84,8 @@ REGEX_WORDS = {
     "throw",
     "yield",
 }
+JS_EXPRESSION_TOKEN = re.compile(r"=>|\.\.\.|\+\+|--|[$\w]+|\S")
+JS_EXPRESSION_REGEX_WORDS = REGEX_WORDS - {"of"} | {"instanceof", "new"}
 C_FAMILY = {
     ".js",
     ".jsx",
@@ -142,9 +144,15 @@ EMBEDDED = re.compile(r"<(script|style)\b[^>]*>", re.IGNORECASE)
 GO_NAME = re.compile(
     r"^\s*(?:(?:func|type|var|const)\s+)?(?:\([^)]*\)\s*)?([A-Za-z_]\w*)"
 )
-GO_REGION = re.compile(
-    r"^\s*(?:type\s+\w+(?:\[[^\]]*\])?\s+(?:struct|interface)\s*\{|(?:const|var|type)\s*\()"
+GO_NON_CODE = re.compile(
+    r"//[^\n]*|/\*[\s\S]*?(?:\*/|\Z)|`[^`]*(?:`|\Z)"
+    r"""|"(?:[^"\\\n]|\\[^\n])*"|'(?:[^'\\\n]|\\[^\n])*'"""
 )
+GO_DECL_SCOPE = re.compile(
+    r"\b(?:struct|interface)\s*\{|^[ \t]*(?:const|var|type)\s*\(", re.MULTILINE
+)
+GO_DELIMITER = re.compile(r"[()\[\]{}]")
+GO_CLOSE = {"(": ")", "[": "]", "{": "}"}
 GO_DECL = re.compile(r"(func|type|var|const|package)\b|import\s+\"C\"")
 HEREDOC = re.compile(r'<<-?\s*([\'"]?)([A-Za-z_][A-Za-z0-9_]*)\1')
 
@@ -474,12 +482,16 @@ def skip_template(text: str, i: int, found: list[tuple[int, int]]) -> int:
 
 def skip_expression(text: str, j: int, found: list[tuple[int, int]], *, regex: bool = False) -> int:
     depth, n = 0, len(text)
+    expects_operand = True
+    previous = ""
     while j < n:
         c = text[j]
         if c in "\"'":
             j = skip_quoted(text, j)
+            expects_operand, previous = False, ""
         elif c == "`":
             j = skip_template(text, j, found)
+            expects_operand, previous = False, ""
         elif text.startswith("//", j):
             end = text.find("\n", j)
             end = n if end == -1 else end
@@ -490,27 +502,36 @@ def skip_expression(text: str, j: int, found: list[tuple[int, int]], *, regex: b
             end = n if end == -1 else end + 2
             found.append((j, end))
             j = end
-        elif regex and c == "/" and starts_regex(text, j, in_expression=True):
+        elif regex and c == "/" and expects_operand:
             j = skip_regex(text, j)
+            expects_operand, previous = False, ""
         elif c == "{":
             depth += 1
             j += 1
+            expects_operand, previous = True, ""
         elif c == "}":
             if depth == 0:
                 return j + 1
             depth -= 1
             j += 1
+            expects_operand, previous = False, ""
+        elif regex and (match := JS_EXPRESSION_TOKEN.match(text, j)):
+            token = match[0]
+            if token not in ("!", "++", "--"):
+                expects_operand = token in REGEX_PREV or token in ("/", "...", "=>") or (
+                    previous != "." and token in JS_EXPRESSION_REGEX_WORDS
+                )
+            previous = token
+            j = match.end()
         else:
             j += 1
     return n
 
 
-def starts_regex(text: str, i: int, *, in_expression: bool = False) -> bool:
+def starts_regex(text: str, i: int) -> bool:
     k = i - 1
     while k >= 0 and text[k] in " \t\r\n":
         k -= 1
-    if in_expression and k >= 0 and (text[k] == "}" or text[max(0, k - 1):k + 1] in ("++", "--")):
-        return False
     if k < 0 or text[k] in REGEX_PREV:
         return True
     end = k + 1
@@ -683,28 +704,39 @@ def go_names_doc(comment: str, code: str) -> bool:
     return bool(words[0] == name.group(1))
 
 
-def go_decl_regions(lines: list[str]) -> set[int]:
-    inside: set[int] = set()
-    depth = 0
-    for index, line in enumerate(lines):
-        code = line.split("//", 1)[0]
-        if depth == 0 and not GO_REGION.match(code):
-            continue
-        if depth > 0:
-            inside.add(index)
-        depth += code.count("{") + code.count("(") - code.count("}") - code.count(")")
-        depth = max(depth, 0)
-    return inside
+def go_decl_regions(text: str) -> tuple[set[int], set[int]]:
+    code = GO_NON_CODE.sub(lambda match: " " + "\n" * match[0].count("\n") + " ", text)
+    declarations = {match.end() - 1 for match in GO_DECL_SCOPE.finditer(code)}
+    scopes: list[tuple[str, bool]] = []
+    before: set[int] = set()
+    after: set[int] = set()
+    offset = 0
+    for index, line in enumerate(code.split("\n")):
+        if scopes and scopes[-1][1]:
+            before.add(index)
+        for match in GO_DELIMITER.finditer(line):
+            token = match[0]
+            if token in GO_CLOSE:
+                declaration = (
+                    offset + match.start() in declarations and (token == "{" or not scopes)
+                )
+                scopes.append((GO_CLOSE[token], declaration))
+            elif scopes and scopes[-1][0] == token:
+                scopes.pop()
+        if scopes and scopes[-1][1]:
+            after.add(index)
+        offset += len(line) + 1
+    return before, after
 
 
 def go_doc_rows(text: str, comments: list[Raw]) -> set[int]:
     lines = text.split("\n")
-    regions = go_decl_regions(lines)
+    before, after = go_decl_regions(text)
     doc = set()
     for start, end, raw, full, _doc in comments:
         if not full:
             code = lines[start - 1][: max(0, lines[start - 1].find(raw.strip()))]
-            if start - 1 in regions and code.strip() and go_names_doc(raw, code):
+            if start - 1 in before and start - 1 in after and go_names_doc(raw, code):
                 doc.add(start)
             continue
         nxt = end
@@ -715,7 +747,7 @@ def go_doc_rows(text: str, comments: list[Raw]) -> set[int]:
         first = start - 1
         while first > 0 and lines[first - 1].lstrip().startswith("//"):
             first -= 1
-        named = nxt in regions and go_names_doc(lines[first].strip(), lines[nxt])
+        named = nxt in before and go_names_doc(lines[first].strip(), lines[nxt])
         if GO_DECL.match(lines[nxt]) or named:
             doc.add(start)
     return doc
