@@ -258,7 +258,7 @@ GEAR = "M16.4 4.41L17.11 1.73A18.5 18.5 0 0 1 22.89 1.73L23.6 4.41A16 16 0 0 1 2
 
 
 def sprite(t: dict[str, str], rows: list[str], x: float, y: float, p: int) -> str:
-    """Draw pixel rows with (x, y) where the sprite's feet meet the ground, at its horizontal center."""
+    # WHY: anchoring at the feet keeps each sprite on the ground as its pose changes.
     colors = {"O": t["agent"], "D": t["agent_dark"], "H": t["agent_hi"], "K": t["agent_hi"], "E": t["ink"]}
     ox, oy = round(x - 4 * p), round(y - len(rows) * p)
     paths: dict[str, str] = {}
