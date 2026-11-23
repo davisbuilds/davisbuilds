@@ -102,6 +102,7 @@ JS_PREFIX_WORDS = (
     JS_EXPRESSION_REGEX_WORDS | JS_INFIX_WORDS | {"await", "class", "function", "extends"}
 )
 JS_OBJECT_PREFIXES = REGEX_PREV - {"{", "}", ":", ";"} | {"return", "throw", "...", "??", "??="}
+JS_OBJECT_UNARY_PREFIXES = {"await", "delete", "typeof", "void"}
 JS_YIELD_IDENTIFIER, JS_YIELD_GENERATOR, JS_YIELD_RESERVED = range(3)
 C_FAMILY = {
     ".js",
@@ -619,7 +620,14 @@ class JSFunctionScopes:
                     mode = JS_YIELD_RESERVED
                 elif body is not None and mode != JS_YIELD_RESERVED:
                     mode = JS_YIELD_GENERATOR if body else JS_YIELD_IDENTIFIER
-                elif previous in JS_OBJECT_PREFIXES or object_value:
+                elif (
+                    object_value or previous in JS_OBJECT_PREFIXES
+                    or (
+                        previous in JS_OBJECT_UNARY_PREFIXES
+                        and before_previous not in JS_MEMBER_ACCESS
+                        and (previous != "await" or not line_break)
+                    )
+                ):
                     self.object_members[depth + 1] = True
             self.frames.append(("}", mode, None, False))
         elif token == self.frames[-1][0] and depth > 1:
